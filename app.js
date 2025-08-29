@@ -120,7 +120,6 @@ function App(){
       </header>
 
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        <ToolsGrid tools={tools} />
         <section className="rounded-3xl p-6" style={{background:`linear-gradient(135deg, ${BRAND.primary} 0%, ${BRAND.teal} 100%)`, color:"white"}}>
           <div className="flex flex-col gap-3">
             <h2 className="text-2xl font-bold">Agente de Marketing Inteligente</h2>
@@ -167,6 +166,7 @@ function App(){
             {tab==='brief' && <Card title="Brief enviado al agente"><pre className="text-xs whitespace-pre-wrap">{JSON.stringify(brief,null,2)}</pre></Card>}
           </div>
         </div>
+        {result && <ToolsGrid tools={tools} />}
       </div>
     </div>
   );
