@@ -42,11 +42,17 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+ codex/remove-unwanted-initial-appearance-me40hy
   const [activeTool, setActiveTool] = useState(null);
   const [contentType, setContentType] = useState("");
   const [platform, setPlatform] = useState("");
   const [format, setFormat] = useState("");
   const [extra, setExtra] = useState("");
+
+  const [images, setImages] = useState([]);
+  const [apiKey, setApiKey] = useState(localStorage.getItem("lh_key")||"");
+  const [showAgent, setShowAgent] = useState(false);
+ main
 
   useEffect(() => {
     // fonts already injected by index.html
@@ -128,6 +134,7 @@ function App() {
     }
   }
 
+codex/remove-unwanted-initial-appearance-me40hy
   const tools = [
     {
       icon: "📱",
@@ -189,6 +196,33 @@ function App() {
       desc: "Planifica tu estrategia de contenido legal",
       action: () => setActiveTool("agenda")
     }
+
+  // Podcast TTS
+  function speak(){ if(!result?.podcast?.script) return; const u = new SpeechSynthesisUtterance(result.podcast.script); u.lang = params.idioma?.startsWith("es")?"es-AR":"en-US"; speechSynthesis.cancel(); speechSynthesis.speak(u); }
+  function stopSpeak(){ speechSynthesis.cancel(); }
+
+  function copy(text){ navigator.clipboard.writeText(text); }
+  function downloadJSON(){ const blob = new Blob([JSON.stringify(result,null,2)],{type:"application/json"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="legalhub-output.json"; a.click(); URL.revokeObjectURL(url); }
+
+  // Planner CSV & ICS
+  function downloadCSV(){ if(!result?.posts) return; const today=new Date(); let d=0; const rows=[]; for(const [net,items] of Object.entries(result.posts)){ for(const text of items){ const date=new Date(today.getTime()+d*86400000); d++; rows.push({fecha:date.toISOString().slice(0,10), red:net, titulo:topic, contenido:text}); } } const header="fecha,red,titulo,contenido\n"; const csv=header+rows.map(r=>`${r.fecha},${r.red},"${r.titulo}","${r.contenido.replace(/\"/g,'\"\"')}"`).join("\n"); const blob=new Blob([csv],{type:"text/csv"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="plan-publicaciones.csv"; a.click(); URL.revokeObjectURL(url); }
+  function downloadICS(){ if(!result?.posts) return; const today=new Date(); const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//LegalHub//Content Planner//ES"]; let i=0; const stamp=(dt)=>dt.toISOString().split(".")[0].replaceAll("-","").replaceAll(":","")+"Z"; for(const [net,items] of Object.entries(result.posts)){ for(const content of items){ const start=new Date(today.getTime()+i*86400000); i++; lines.push("BEGIN:VEVENT"); lines.push(`UID:${(Math.random()+1).toString(36).slice(2)}@legalhub.la`); lines.push(`DTSTAMP:${stamp(start)}`); lines.push(`DTSTART:${stamp(start)}`); lines.push(`SUMMARY:${topic} – ${net}`); lines.push(`DESCRIPTION:${content.split("\n").join("\\n")}`); lines.push("END:VEVENT"); } } lines.push("END:VCALENDAR"); const blob=new Blob([lines.join("\n")],{type:"text/calendar"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="agenda-legalhub.ics"; a.click(); URL.revokeObjectURL(url); }
+
+  async function downloadPPTX(){ const { default: PptxGenJS } = await import("https://esm.run/pptxgenjs"); const pptx=new PptxGenJS(); pptx.layout="16x9"; pptx.defineSlideMaster({ title:"MASTER", background:{color:"FFFFFF"}, objects:[ {rect:{x:0,y:0,w:"100%",h:0.6,fill:BRAND.primary}}, {text:{text:"LegalHub",options:{x:0.3,y:0.15,fontFace:"Poppins",color:"FFFFFF",fontSize:18,bold:true}}} ]}); const add=(title,bullets=[])=>{ const s=pptx.addSlide({masterName:"MASTER"}); s.addText(title,{x:0.5,y:0.9,fontFace:"Poppins",fontSize:30,bold:true,color:BRAND.primary}); s.addText(bullets.map(b=>"• "+b).join("\n"),{x:0.5,y:1.6,w:9,h:4,fontFace:"Open Sans",fontSize:18,color:BRAND.navy}); }; add(result?.video?.title||topic,[brief.especialidad,brief.objetivo,brief.cta]); add("Estructura del mensaje", result?.video?.captions||[]); add("Plan de Contenidos", Object.values(result?.posts||{}).flat().slice(0,6)); add("CTA",[brief.cta]); await pptx.writeFile({fileName:"presentacion-legalhub.pptx"}); }
+  async function downloadDOCX(){ const { Document, Packer, Paragraph, HeadingLevel } = await import("https://esm.run/docx"); const doc=new Document({sections:[{children:[ new Paragraph({text:"Propuesta – LegalHub",heading:HeadingLevel.HEADING_1}), new Paragraph({text:`Tópico: ${topic}`}), new Paragraph({text:`Especialidad: ${brief.especialidad}`}), new Paragraph({text:"Objetivo"}), new Paragraph({text:brief.objetivo}), new Paragraph({text:"Beneficios"}), new Paragraph({text:"• Más consultas calificadas"}), new Paragraph({text:"• Procesos medibles"}), new Paragraph({text:"• Automatización"}), new Paragraph({text:"CTA"}), new Paragraph({text:brief.cta}), ]} ]}); const blob=await Packer.toBlob(doc); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="propuesta-legalhub.docx"; a.click(); URL.revokeObjectURL(url); }
+
+  const tools=[
+    {icon:'📱',title:'Contenido Multimedia',desc:'Crea posteos, videos y podcasts de forma unificada',action:()=>{ setShowAgent(true); setTab('posts'); }},
+    {icon:'📊',title:'Excel de Publicaciones',desc:'Organiza y planifica tus publicaciones',action:()=>{ setShowAgent(true); setTab('planner'); }},
+    {icon:'📝',title:'Generación de Propuestas',desc:'Crea propuestas y presupuestos',action:()=>{ setShowAgent(true); }},
+    {icon:'📽️',title:'Presentaciones',desc:'Slides impactantes para demos',action:()=>{ setShowAgent(true); }},
+    {icon:'🎨',title:'Branding',desc:'Guías de identidad visual',action:()=>{ setShowAgent(true); setTab('branding'); }},
+    {icon:'📧',title:'Email Marketing & CRM',desc:'Conecta con tus contactos',action:()=>{ setShowAgent(true); setTab('email'); }},
+    {icon:'🔍',title:'Herramientas SEO',desc:'Optimiza tu presencia en buscadores',action:()=>{ setShowAgent(true); setTab('seo'); }},
+    {icon:'📈',title:'Medidor de Alcance',desc:'Evalúa el impacto de tus publicaciones',action:()=>{ setShowAgent(true); setTab('reach'); }},
+    {icon:'🚀',title:'Apollo Legal',desc:'Prospección automática de clientes',action:()=>window.open('https://legalhub.la','_blank')},
+    {icon:'🗓️',title:'Agenda',desc:'Planifica tu estrategia de contenido legal',action:()=>{ setShowAgent(true); setTab('planner'); }}
+ main
   ];
 
   return (
@@ -226,6 +260,7 @@ function App() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+ codex/remove-unwanted-initial-appearance-me40hy
         {!activeTool && <ToolsGrid tools={tools} />}
         {activeTool && (
           <ToolConfig
@@ -324,6 +359,22 @@ function ToolConfig({
                 <option value="video">Video</option>
                 <option value="podcast">Podcast</option>
               </select>
+
+        {showAgent && (
+          <>
+        <section className="rounded-3xl p-6" style={{background:`linear-gradient(135deg, ${BRAND.primary} 0%, ${BRAND.teal} 100%)`, color:"white"}}>
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">Agente de Marketing Inteligente</h2>
+              <button onClick={()=>setShowAgent(false)} className="text-sm px-2 py-1 rounded-lg bg-white/20 hover:bg-white/30">Cerrar</button>
+            </div>
+            <p className="text-sm text-white/90">Generá posteos, guiones de video, podcast, agenda, presentaciones y propuestas con un brief.</p>
+            <div className="grid md:grid-cols-4 gap-3">
+              <div className="space-y-2"><label className="text-sm font-medium">Especialidad</label><select className="w-full px-3 py-2 rounded-xl text-black" value={selected} onChange={e=>setSelected(e.target.value)}>{SPECIALTIES.map(s=>(<option key={s} value={s}>{s}</option>))}</select></div>
+              <div className="space-y-2 md:col-span-1"><label className="text-sm font-medium">Tópico</label><input className="w-full px-3 py-2 rounded-xl text-black" value={topic} onChange={e=>setTopic(e.target.value)} placeholder="SEO local para estudios jurídicos"/></div>
+              <div className="space-y-2"><label className="text-sm font-medium">Audiencia</label><input className="w-full px-3 py-2 rounded-xl text-black" value={params.audiencia} onChange={e=>setParams({...params,audiencia:e.target.value})}/></div>
+              <div className="space-y-2"><label className="text-sm font-medium">CTA</label><input className="w-full px-3 py-2 rounded-xl text-black" value={params.cta} onChange={e=>setParams({...params,cta:e.target.value})}/></div>
+ main
             </div>
             <div className="space-y-1">
               <label className="text-sm font-medium">Plataforma</label>
@@ -339,6 +390,7 @@ function ToolConfig({
               </select>
             </div>
           </div>
+ codex/remove-unwanted-initial-appearance-me40hy
 
           <div className="grid md:grid-cols-2 gap-3">
             <div className="space-y-1">
@@ -369,6 +421,37 @@ function ToolConfig({
               </select>
             </div>
           </div>
+
+        </section>
+            <div className="rounded-2xl shadow bg-white">
+          <div className="border-b px-4 pt-4">
+            <div className="flex flex-wrap gap-2">
+                {[['posts','Posteos'],['video','Video'],['podcast','Podcast'],['images','Imágenes'],['seo','SEO'],['email','Email'],['branding','Branding'],['reach','Alcance'],['planner','Agenda'],['brief','Brief JSON']].map(([v,l])=>(
+                <button key={v} onClick={()=>setTab(v)} className={cx('px-3 py-2 rounded-t-xl text-sm', tab===v?'text-white':'hover:bg-gray-100')} style={tab===v?{background:BRAND.primary}:{}}>{l}</button>
+              ))}
+            </div>
+          </div>
+          <div className="p-4">
+            {tab==='posts' && <PostsTab result={result}/>}
+            {tab==='video' && <VideoTab result={result}/>}
+            {tab==='podcast' && <PodcastTab result={result} speak={speak} stopSpeak={stopSpeak}/>}
+            {tab==='images' && <ImagesTab result={result} images={images}/>}
+            {tab==='seo' && <SEOTab result={result} topic={topic}/>}
+            {tab==='email' && <EmailTab result={result}/>}
+            {tab==='branding' && <BrandingTab/>}
+            {tab==='reach' && <ReachTab result={result}/>}
+            {tab==='planner' && <PlannerTab result={result} downloadCSV={downloadCSV} downloadICS={downloadICS}/>}
+            {tab==='brief' && <Card title="Brief enviado al agente"><pre className="text-xs whitespace-pre-wrap">{JSON.stringify(brief,null,2)}</pre></Card>}
+          </div>
+        </div>
+          </>
+        )}
+        <ToolsGrid tools={tools} />
+      </div>
+    </div>
+  );
+}
+main
 
           <div className="space-y-1">
             <label className="text-sm font-medium">Audiencia Objetivo</label>
