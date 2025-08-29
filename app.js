@@ -1,5 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "https://esm.run/react@18";
-import { createRoot } from "https://esm.run/react-dom@18/client";
+const { useEffect, useMemo, useRef, useState } = React;
 
 // ====== MARCA LEGALHUB ======
 const BRAND = { bg: "#F2F2F7", primary: "#60189C", primaryDark: "#330D53", teal: "#00B989", navy: "#172755", cyan: "#41E1F2" };
@@ -297,5 +296,3 @@ function ToolsGrid({tools}){
     </section>
   );
 }
-
-createRoot(document.getElementById("root")).render(<App/>);
