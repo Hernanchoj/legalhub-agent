@@ -296,5 +296,3 @@ function ToolsGrid({tools}){
     </section>
   );
 }
-
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
