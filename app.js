@@ -296,13 +296,5 @@ function ToolsGrid({tools}){
     </section>
   );
 }
-codex/make-the-page-more-visually-appealing-fbf1za
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-
- codex/make-the-page-more-visually-appealing-6nvhs7
-
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-
- main
- main
