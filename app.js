@@ -19,6 +19,7 @@ function App(){
   const [error, setError] = useState("");
   const [images, setImages] = useState([]);
   const [apiKey, setApiKey] = useState(localStorage.getItem("lh_key")||"");
+  const [showAgent, setShowAgent] = useState(false);
 
   useEffect(()=>{
     // fonts already injected by index.html
@@ -88,16 +89,16 @@ function App(){
   async function downloadDOCX(){ const { Document, Packer, Paragraph, HeadingLevel } = await import("https://esm.run/docx"); const doc=new Document({sections:[{children:[ new Paragraph({text:"Propuesta – LegalHub",heading:HeadingLevel.HEADING_1}), new Paragraph({text:`Tópico: ${topic}`}), new Paragraph({text:`Especialidad: ${brief.especialidad}`}), new Paragraph({text:"Objetivo"}), new Paragraph({text:brief.objetivo}), new Paragraph({text:"Beneficios"}), new Paragraph({text:"• Más consultas calificadas"}), new Paragraph({text:"• Procesos medibles"}), new Paragraph({text:"• Automatización"}), new Paragraph({text:"CTA"}), new Paragraph({text:brief.cta}), ]} ]}); const blob=await Packer.toBlob(doc); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="propuesta-legalhub.docx"; a.click(); URL.revokeObjectURL(url); }
 
   const tools=[
-    {icon:'📱',title:'Contenido Multimedia',desc:'Crea posteos, videos y podcasts de forma unificada',action:async()=>{ if(!result) await generate(); setTab('posts'); }},
-    {icon:'📊',title:'Excel de Publicaciones',desc:'Organiza y planifica tus publicaciones',action:async()=>{ if(!result) await generate(); setTab('planner'); }},
-    {icon:'📝',title:'Generación de Propuestas',desc:'Crea propuestas y presupuestos',action:async()=>{ if(!result) await generate(); await downloadDOCX(); }},
-    {icon:'📽️',title:'Presentaciones',desc:'Slides impactantes para demos',action:async()=>{ if(!result) await generate(); await downloadPPTX(); }},
-    {icon:'🎨',title:'Branding',desc:'Guías de identidad visual',action:()=>setTab('branding')},
-    {icon:'📧',title:'Email Marketing & CRM',desc:'Conecta con tus contactos',action:async()=>{ if(!result) await generate(); setTab('email'); }},
-    {icon:'🔍',title:'Herramientas SEO',desc:'Optimiza tu presencia en buscadores',action:async()=>{ if(!result) await generate(); setTab('seo'); }},
-    {icon:'📈',title:'Medidor de Alcance',desc:'Evalúa el impacto de tus publicaciones',action:async()=>{ if(!result) await generate(); setTab('reach'); }},
+    {icon:'📱',title:'Contenido Multimedia',desc:'Crea posteos, videos y podcasts de forma unificada',action:()=>{ setShowAgent(true); setTab('posts'); }},
+    {icon:'📊',title:'Excel de Publicaciones',desc:'Organiza y planifica tus publicaciones',action:()=>{ setShowAgent(true); setTab('planner'); }},
+    {icon:'📝',title:'Generación de Propuestas',desc:'Crea propuestas y presupuestos',action:()=>{ setShowAgent(true); }},
+    {icon:'📽️',title:'Presentaciones',desc:'Slides impactantes para demos',action:()=>{ setShowAgent(true); }},
+    {icon:'🎨',title:'Branding',desc:'Guías de identidad visual',action:()=>{ setShowAgent(true); setTab('branding'); }},
+    {icon:'📧',title:'Email Marketing & CRM',desc:'Conecta con tus contactos',action:()=>{ setShowAgent(true); setTab('email'); }},
+    {icon:'🔍',title:'Herramientas SEO',desc:'Optimiza tu presencia en buscadores',action:()=>{ setShowAgent(true); setTab('seo'); }},
+    {icon:'📈',title:'Medidor de Alcance',desc:'Evalúa el impacto de tus publicaciones',action:()=>{ setShowAgent(true); setTab('reach'); }},
     {icon:'🚀',title:'Apollo Legal',desc:'Prospección automática de clientes',action:()=>window.open('https://legalhub.la','_blank')},
-    {icon:'🗓️',title:'Agenda',desc:'Planifica tu estrategia de contenido legal',action:async()=>{ if(!result) await generate(); setTab('planner'); }}
+    {icon:'🗓️',title:'Agenda',desc:'Planifica tu estrategia de contenido legal',action:()=>{ setShowAgent(true); setTab('planner'); }}
   ];
 
   return (
@@ -120,9 +121,14 @@ function App(){
       </header>
 
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        {showAgent && (
+          <>
         <section className="rounded-3xl p-6" style={{background:`linear-gradient(135deg, ${BRAND.primary} 0%, ${BRAND.teal} 100%)`, color:"white"}}>
           <div className="flex flex-col gap-3">
-            <h2 className="text-2xl font-bold">Agente de Marketing Inteligente</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">Agente de Marketing Inteligente</h2>
+              <button onClick={()=>setShowAgent(false)} className="text-sm px-2 py-1 rounded-lg bg-white/20 hover:bg-white/30">Cerrar</button>
+            </div>
             <p className="text-sm text-white/90">Generá posteos, guiones de video, podcast, agenda, presentaciones y propuestas con un brief.</p>
             <div className="grid md:grid-cols-4 gap-3">
               <div className="space-y-2"><label className="text-sm font-medium">Especialidad</label><select className="w-full px-3 py-2 rounded-xl text-black" value={selected} onChange={e=>setSelected(e.target.value)}>{SPECIALTIES.map(s=>(<option key={s} value={s}>{s}</option>))}</select></div>
@@ -144,8 +150,7 @@ function App(){
             {error && <p className="text-sm" style={{color:'#FFE4E6'}}>{error}</p>}
           </div>
         </section>
-
-        <div className="rounded-2xl shadow bg-white">
+            <div className="rounded-2xl shadow bg-white">
           <div className="border-b px-4 pt-4">
             <div className="flex flex-wrap gap-2">
                 {[['posts','Posteos'],['video','Video'],['podcast','Podcast'],['images','Imágenes'],['seo','SEO'],['email','Email'],['branding','Branding'],['reach','Alcance'],['planner','Agenda'],['brief','Brief JSON']].map(([v,l])=>(
@@ -166,6 +171,8 @@ function App(){
             {tab==='brief' && <Card title="Brief enviado al agente"><pre className="text-xs whitespace-pre-wrap">{JSON.stringify(brief,null,2)}</pre></Card>}
           </div>
         </div>
+          </>
+        )}
         <ToolsGrid tools={tools} />
       </div>
     </div>
