@@ -88,16 +88,16 @@ function App(){
   async function downloadDOCX(){ const { Document, Packer, Paragraph, HeadingLevel } = await import("https://esm.run/docx"); const doc=new Document({sections:[{children:[ new Paragraph({text:"Propuesta – LegalHub",heading:HeadingLevel.HEADING_1}), new Paragraph({text:`Tópico: ${topic}`}), new Paragraph({text:`Especialidad: ${brief.especialidad}`}), new Paragraph({text:"Objetivo"}), new Paragraph({text:brief.objetivo}), new Paragraph({text:"Beneficios"}), new Paragraph({text:"• Más consultas calificadas"}), new Paragraph({text:"• Procesos medibles"}), new Paragraph({text:"• Automatización"}), new Paragraph({text:"CTA"}), new Paragraph({text:brief.cta}), ]} ]}); const blob=await Packer.toBlob(doc); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="propuesta-legalhub.docx"; a.click(); URL.revokeObjectURL(url); }
 
   const tools=[
-    {icon:'📱',title:'Contenido Multimedia',desc:'Crea posteos, videos y podcasts de forma unificada',action:()=>setTab('posts')},
-    {icon:'📊',title:'Excel de Publicaciones',desc:'Organiza y planifica tus publicaciones',action:()=>result?setTab('planner'):alert('Generá contenido primero')},
-    {icon:'📝',title:'Generación de Propuestas',desc:'Crea propuestas y presupuestos',action:()=>result?downloadDOCX():alert('Generá contenido primero')},
-    {icon:'📽️',title:'Presentaciones',desc:'Slides impactantes para demos',action:()=>result?downloadPPTX():alert('Generá contenido primero')},
+    {icon:'📱',title:'Contenido Multimedia',desc:'Crea posteos, videos y podcasts de forma unificada',action:async()=>{ if(!result) await generate(); setTab('posts'); }},
+    {icon:'📊',title:'Excel de Publicaciones',desc:'Organiza y planifica tus publicaciones',action:async()=>{ if(!result) await generate(); setTab('planner'); }},
+    {icon:'📝',title:'Generación de Propuestas',desc:'Crea propuestas y presupuestos',action:async()=>{ if(!result) await generate(); await downloadDOCX(); }},
+    {icon:'📽️',title:'Presentaciones',desc:'Slides impactantes para demos',action:async()=>{ if(!result) await generate(); await downloadPPTX(); }},
     {icon:'🎨',title:'Branding',desc:'Guías de identidad visual',action:()=>setTab('branding')},
-    {icon:'📧',title:'Email Marketing & CRM',desc:'Conecta con tus contactos',action:()=>setTab('email')},
-    {icon:'🔍',title:'Herramientas SEO',desc:'Optimiza tu presencia en buscadores',action:()=>setTab('seo')},
-    {icon:'📈',title:'Medidor de Alcance',desc:'Evalúa el impacto de tus publicaciones',action:()=>result?setTab('reach'):alert('Generá contenido primero')},
+    {icon:'📧',title:'Email Marketing & CRM',desc:'Conecta con tus contactos',action:async()=>{ if(!result) await generate(); setTab('email'); }},
+    {icon:'🔍',title:'Herramientas SEO',desc:'Optimiza tu presencia en buscadores',action:async()=>{ if(!result) await generate(); setTab('seo'); }},
+    {icon:'📈',title:'Medidor de Alcance',desc:'Evalúa el impacto de tus publicaciones',action:async()=>{ if(!result) await generate(); setTab('reach'); }},
     {icon:'🚀',title:'Apollo Legal',desc:'Prospección automática de clientes',action:()=>window.open('https://legalhub.la','_blank')},
-    {icon:'🗓️',title:'Agenda',desc:'Planifica tu estrategia de contenido legal',action:()=>result?setTab('planner'):alert('Generá contenido primero')}
+    {icon:'🗓️',title:'Agenda',desc:'Planifica tu estrategia de contenido legal',action:async()=>{ if(!result) await generate(); setTab('planner'); }}
   ];
 
   return (
@@ -166,7 +166,7 @@ function App(){
             {tab==='brief' && <Card title="Brief enviado al agente"><pre className="text-xs whitespace-pre-wrap">{JSON.stringify(brief,null,2)}</pre></Card>}
           </div>
         </div>
-        {result && <ToolsGrid tools={tools} />}
+        <ToolsGrid tools={tools} />
       </div>
     </div>
   );
