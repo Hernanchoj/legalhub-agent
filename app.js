@@ -115,64 +115,54 @@ function App(){
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-12 gap-6">
-        <aside className="col-span-12 lg:col-span-3">
-          <div className="rounded-2xl shadow p-4 bg-white">
-            <h2 className="text-sm font-semibold mb-3" style={{color:BRAND.navy}}>Especialidades de LegalHub</h2>
-            <ul className="space-y-1 max-h-[520px] overflow-auto pr-1">{SPECIALTIES.map(s=>(
-              <li key={s}><button onClick={()=>setSelected(s)} className={cx('w-full text-left px-3 py-2 rounded-xl text-sm', selected===s?'text-white':'hover:bg-gray-100')} style={selected===s?{background:BRAND.teal}:{}}>{s}</button></li>
-            ))}</ul>
+      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        <ToolsGrid tools={tools} />
+        <section className="rounded-3xl p-6" style={{background:`linear-gradient(135deg, ${BRAND.primary} 0%, ${BRAND.teal} 100%)`, color:"white"}}>
+          <div className="flex flex-col gap-3">
+            <h2 className="text-2xl font-bold">Agente de Marketing Inteligente</h2>
+            <p className="text-sm text-white/90">Generá posteos, guiones de video, podcast, agenda, presentaciones y propuestas con un brief.</p>
+            <div className="grid md:grid-cols-4 gap-3">
+              <div className="space-y-2"><label className="text-sm font-medium">Especialidad</label><select className="w-full px-3 py-2 rounded-xl text-black" value={selected} onChange={e=>setSelected(e.target.value)}>{SPECIALTIES.map(s=>(<option key={s} value={s}>{s}</option>))}</select></div>
+              <div className="space-y-2 md:col-span-1"><label className="text-sm font-medium">Tópico</label><input className="w-full px-3 py-2 rounded-xl text-black" value={topic} onChange={e=>setTopic(e.target.value)} placeholder="SEO local para estudios jurídicos"/></div>
+              <div className="space-y-2"><label className="text-sm font-medium">Audiencia</label><input className="w-full px-3 py-2 rounded-xl text-black" value={params.audiencia} onChange={e=>setParams({...params,audiencia:e.target.value})}/></div>
+              <div className="space-y-2"><label className="text-sm font-medium">CTA</label><input className="w-full px-3 py-2 rounded-xl text-black" value={params.cta} onChange={e=>setParams({...params,cta:e.target.value})}/></div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button onClick={generate} disabled={loading} className="px-4 py-2 rounded-2xl bg-white text-black hover:opacity-90 disabled:opacity-50">{loading?"Generando…":"Generar Contenido"}</button>
+              <button onClick={genImages} disabled={loading || !result} className="px-4 py-2 rounded-2xl" style={{background:BRAND.cyan, color:'#0b1120'}}>Generar Imágenes</button>
+              {result && (<>
+                <button onClick={downloadJSON} className="px-4 py-2 rounded-2xl bg-black/80 text-white">Descargar JSON</button>
+                <button onClick={downloadCSV} className="px-4 py-2 rounded-2xl bg-white text-black">Plan CSV</button>
+                <button onClick={downloadICS} className="px-4 py-2 rounded-2xl bg-white text-black">Agenda ICS</button>
+                <button onClick={downloadPPTX} className="px-4 py-2 rounded-2xl bg-white text-black">Presentación PPTX</button>
+                <button onClick={downloadDOCX} className="px-4 py-2 rounded-2xl bg-white text-black">Propuesta DOCX</button>
+              </>)}
+            </div>
+            {error && <p className="text-sm" style={{color:'#FFE4E6'}}>{error}</p>}
           </div>
-        </aside>
+        </section>
 
-        <main className="col-span-12 lg:col-span-9 space-y-6">
-          <ToolsGrid tools={tools} />
-          <section className="rounded-3xl p-6" style={{background:`linear-gradient(135deg, ${BRAND.primary} 0%, ${BRAND.teal} 100%)`, color:"white"}}>
-            <div className="flex flex-col gap-3">
-              <h2 className="text-2xl font-bold">Agente de Marketing Inteligente</h2>
-              <p className="text-sm text-white/90">Generá posteos, guiones de video, podcast, agenda, presentaciones y propuestas con un brief.</p>
-              <div className="grid md:grid-cols-3 gap-3">
-                <div className="space-y-2"><label className="text-sm font-medium">Tópico</label><input className="w-full px-3 py-2 rounded-xl text-black" value={topic} onChange={e=>setTopic(e.target.value)} placeholder="SEO local para estudios jurídicos"/></div>
-                <div className="space-y-2"><label className="text-sm font-medium">Audiencia</label><input className="w-full px-3 py-2 rounded-xl text-black" value={params.audiencia} onChange={e=>setParams({...params,audiencia:e.target.value})}/></div>
-                <div className="space-y-2"><label className="text-sm font-medium">CTA</label><input className="w-full px-3 py-2 rounded-xl text-black" value={params.cta} onChange={e=>setParams({...params,cta:e.target.value})}/></div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <button onClick={generate} disabled={loading} className="px-4 py-2 rounded-2xl bg-white text-black hover:opacity-90 disabled:opacity-50">{loading?"Generando…":"Generar Contenido"}</button>
-                <button onClick={genImages} disabled={loading || !result} className="px-4 py-2 rounded-2xl" style={{background:BRAND.cyan, color:'#0b1120'}}>Generar Imágenes</button>
-                {result && (<>
-                  <button onClick={downloadJSON} className="px-4 py-2 rounded-2xl bg-black/80 text-white">Descargar JSON</button>
-                  <button onClick={downloadCSV} className="px-4 py-2 rounded-2xl bg-white text-black">Plan CSV</button>
-                  <button onClick={downloadICS} className="px-4 py-2 rounded-2xl bg-white text-black">Agenda ICS</button>
-                  <button onClick={downloadPPTX} className="px-4 py-2 rounded-2xl bg-white text-black">Presentación PPTX</button>
-                  <button onClick={downloadDOCX} className="px-4 py-2 rounded-2xl bg-white text-black">Propuesta DOCX</button>
-                </>)}
-              </div>
-              {error && <p className="text-sm" style={{color:'#FFE4E6'}}>{error}</p>}
-            </div>
-          </section>
-
-          <div className="rounded-2xl shadow bg-white">
-            <div className="border-b px-4 pt-4">
-              <div className="flex flex-wrap gap-2">
-                  {[['posts','Posteos'],['video','Video'],['podcast','Podcast'],['images','Imágenes'],['seo','SEO'],['email','Email'],['branding','Branding'],['reach','Alcance'],['planner','Agenda'],['brief','Brief JSON']].map(([v,l])=>(
-                  <button key={v} onClick={()=>setTab(v)} className={cx('px-3 py-2 rounded-t-xl text-sm', tab===v?'text-white':'hover:bg-gray-100')} style={tab===v?{background:BRAND.primary}:{}}>{l}</button>
-                ))}
-              </div>
-            </div>
-            <div className="p-4">
-              {tab==='posts' && <PostsTab result={result}/>}
-              {tab==='video' && <VideoTab result={result}/>}
-              {tab==='podcast' && <PodcastTab result={result} speak={speak} stopSpeak={stopSpeak}/>}
-              {tab==='images' && <ImagesTab result={result} images={images}/>}
-              {tab==='seo' && <SEOTab result={result} topic={topic}/>}
-              {tab==='email' && <EmailTab result={result}/>}
-              {tab==='branding' && <BrandingTab/>}
-              {tab==='reach' && <ReachTab result={result}/>}
-              {tab==='planner' && <PlannerTab result={result} downloadCSV={downloadCSV} downloadICS={downloadICS}/>}
-              {tab==='brief' && <Card title="Brief enviado al agente"><pre className="text-xs whitespace-pre-wrap">{JSON.stringify(brief,null,2)}</pre></Card>}
+        <div className="rounded-2xl shadow bg-white">
+          <div className="border-b px-4 pt-4">
+            <div className="flex flex-wrap gap-2">
+                {[['posts','Posteos'],['video','Video'],['podcast','Podcast'],['images','Imágenes'],['seo','SEO'],['email','Email'],['branding','Branding'],['reach','Alcance'],['planner','Agenda'],['brief','Brief JSON']].map(([v,l])=>(
+                <button key={v} onClick={()=>setTab(v)} className={cx('px-3 py-2 rounded-t-xl text-sm', tab===v?'text-white':'hover:bg-gray-100')} style={tab===v?{background:BRAND.primary}:{}}>{l}</button>
+              ))}
             </div>
           </div>
-        </main>
+          <div className="p-4">
+            {tab==='posts' && <PostsTab result={result}/>}
+            {tab==='video' && <VideoTab result={result}/>}
+            {tab==='podcast' && <PodcastTab result={result} speak={speak} stopSpeak={stopSpeak}/>}
+            {tab==='images' && <ImagesTab result={result} images={images}/>}
+            {tab==='seo' && <SEOTab result={result} topic={topic}/>}
+            {tab==='email' && <EmailTab result={result}/>}
+            {tab==='branding' && <BrandingTab/>}
+            {tab==='reach' && <ReachTab result={result}/>}
+            {tab==='planner' && <PlannerTab result={result} downloadCSV={downloadCSV} downloadICS={downloadICS}/>}
+            {tab==='brief' && <Card title="Brief enviado al agente"><pre className="text-xs whitespace-pre-wrap">{JSON.stringify(brief,null,2)}</pre></Card>}
+          </div>
+        </div>
       </div>
     </div>
   );
