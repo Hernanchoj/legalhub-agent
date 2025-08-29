@@ -45,7 +45,7 @@ function App(){
       let json = null;
       if(apiKey){
         try{
-          const SYSTEM = "Eres un planner de marketing legal. Devuelve JSON con {posts, video, podcast, images, seo}. Español es-AR.";
+          const SYSTEM = "Eres un agente de marketing legal con más de 15 años de experiencia. Genera publicaciones creativas e imágenes llamativas. Devuelve JSON con {posts, video, podcast, images, seo}. Español es-AR.";
           const USER = `Brief JSON\\n${JSON.stringify(brief)}\\nTareas: 2 variantes por red; guion video ≤60s + captions; outline+guion podcast 8–10min; 2 prompts de imagen (portada_landing, post_carrusel); SEO (title, meta, keywords). Responde SOLO JSON.`;
           const res = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
@@ -106,7 +106,11 @@ function App(){
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl" style={{background:BRAND.primary,color:"white"}}>LH</span>
-            <div><h1 className="text-xl font-bold" style={{color:BRAND.primaryDark}}>LegalHub – Marketing Intelligence</h1><p className="text-xs text-gray-600 -mt-0.5">Profesional • Innovador • Cercano • Claro</p></div>
+            <div>
+              <h1 className="text-xl font-bold" style={{color:BRAND.primaryDark}}>LegalHub – Marketing Intelligence</h1>
+              <p className="text-xs text-gray-600 -mt-0.5">Profesional • Innovador • Cercano • Claro</p>
+              <p className="text-xs text-gray-600">Agente de marketing con más de 15 años de experiencia</p>
+            </div>
           </div>
           <div className="flex items-center gap-2 text-xs">
             <input type="password" placeholder="(opcional) OpenAI API Key" className="w-64 px-3 py-2 rounded-xl border" value={apiKey} onChange={e=>setApiKey(e.target.value)} />
