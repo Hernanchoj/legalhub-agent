@@ -1,5 +1,7 @@
 # LegalHub – Agente de Marketing (GitHub Pages)
 
+Interfaz para generar publicaciones creativas e imágenes llamativas, impulsada por un agente de marketing con más de 15 años de experiencia.
+
 Sitio listo para publicar sin build. Incluye:
 - React vía CDN (esm.run)
 - Tailwind vía CDN
