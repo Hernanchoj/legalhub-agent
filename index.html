@@ -1,122 +1,19 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>LegalHub – Agente de Marketing (One‑File)</title>
-<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<style>
-:root{ --lh-bg:#F2F2F7; --lh-primary:#60189C; --lh-teal:#00B989; --lh-navy:#172755; --lh-cyan:#41E1F2; }
-body{ font-family:'Open Sans',system-ui,Segoe UI,Roboto,Arial,sans-serif; background:var(--lh-bg); }
-h1,h2,h3{ font-family:'Poppins',system-ui,Segoe UI,Roboto,Arial,sans-serif; }
-</style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>LegalHub – Agente de Marketing</title>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{ --lh-bg:#F2F2F7; --lh-primary:#60189C; --lh-teal:#00B989; --lh-navy:#172755; --lh-cyan:#41E1F2; }
+    body{ font-family:'Open Sans',system-ui,Segoe UI,Roboto,Arial,sans-serif; background:var(--lh-bg); }
+    h1,h2,h3{ font-family:'Poppins',system-ui,Segoe UI,Roboto,Arial,sans-serif; }
+  </style>
 </head>
 <body>
-<div id="root"></div>
-
-<script type="text/babel">
-const BRAND = { bg: "#F2F2F7", primary: "#60189C", primaryDark: "#330D53", teal: "#00B989", navy: "#172755", cyan: "#41E1F2" };
-const SPECIALTIES = ["Gestión del Conocimiento","Alertas Judiciales","Gestión de Reclamos (Soul)","Web Scraping","Bastanteo","Automatización de Procesos","RPA","Clasificación Automática","Text-Mining","Document & Contract Automation","Legal Process Outsourcing","Legal Analytics & Dashboarding"];
-const DEFAULT_PARAMS = { objetivo:"captar leads de estudios jurídicos", audiencia:"abogados y estudios pequeños en Argentina", tono:"profesional y cercano, con autoridad", voz:"LegalHub", idioma:"es-AR", cta:"Reservá tu diagnóstico" };
-
-function cx(...a){return a.filter(Boolean).join(" ");}
-
-function Card({title, children}){ return <div className="bg-white rounded-2xl shadow p-4">{title && <h4 className="font-semibold mb-2" style={{color:BRAND.navy}}>{title}</h4>}<div className="prose prose-sm max-w-none">{children}</div></div>; }
-function Placeholder(){ return <div className="text-sm text-gray-500">Generá contenido con el botón "Generar Contenido".</div>; }
-function PostBlock({title, items}){ return <Card title={title}>{(!items||items.length===0)&&<p className="text-sm text-gray-500">No hay contenido generado.</p>}<div className="space-y-3">{items?.map((c,i)=>(<div key={i} className="rounded-xl border p-3 bg-gray-50"><div className="flex items-center justify-between gap-2 mb-2"><div className="text-sm font-medium">Variante {i+1}</div><button onClick={()=>navigator.clipboard.writeText(c)} className="px-3 py-1.5 rounded-xl text-white" style={{background:BRAND.primary}}>Copiar</button></div><pre className="whitespace-pre-wrap text-sm leading-6">{c}</pre></div>))}</div></Card>; }
-
-function Teleprompter({text}){ const [speed,setSpeed]=React.useState(1.5); const [run,setRun]=React.useState(false); const boxRef=React.useRef(null); React.useEffect(()=>{ let raf; const step=()=>{ if(run&&boxRef.current) boxRef.current.scrollTop += speed; raf=requestAnimationFrame(step); }; raf=requestAnimationFrame(step); return()=>cancelAnimationFrame(raf); },[run,speed]); return (<div><div className="flex items-center gap-2 mb-2"><button onClick={()=>setRun(!run)} className="px-3 py-1.5 rounded-xl" style={{background:BRAND.teal,color:'white'}}>{run?"Pausar":"Reproducir"}</button><label className="text-sm">Velocidad <input type="range" min="0" max="5" step="0.1" value={speed} onChange={e=>setSpeed(parseFloat(e.target.value))} className="ml-2"/></label><button onClick={()=>navigator.clipboard.writeText(text)} className="px-3 py-1.5 rounded-xl bg-white border">Copiar guion</button></div><div ref={boxRef} className="h-72 rounded-xl border bg-black text-green-200 p-6 overflow-auto"><div className="min-h-full text-xl leading-[2.2rem] font-medium select-none">{(text||'').split('\\n\\n').map((p,i)=>(<p key={i} className="mb-6">{p}</p>))}</div></div></div>); }
-
-function App(){ 
-  const [selected,setSelected]=React.useState(SPECIALTIES[0]);
-  const [topic,setTopic]=React.useState("SEO local para estudios jurídicos");
-  const [params,setParams]=React.useState(DEFAULT_PARAMS);
-  const [result,setResult]=React.useState(null);
-  const [tab,setTab]=React.useState("posts");
-  const [images,setImages]=React.useState([]);
-  const [error,setError]=React.useState("");
-
-  function templated(){
-    const top=topic, cta=params.cta, spec=selected;
-    const mk=(net)=>`➡️ ${top} (${spec}).\n• Más consultas calificadas\n• Procesos medibles\n• Menos tareas manuales\n${cta} #legalhub #marketinglegal #${net}`;
-    const video={ title:`${top} en 60 segundos`, hook:"¿Tu estudio recibe pocas consultas de calidad?", script:`HOOK: ¿Tu estudio recibe pocas consultas de calidad?\n1) Problema: visibilidad y seguimiento.\n2) Solución: ${spec} en tu estrategia.\n3) Plan 3 pasos: SEO local + contenido útil + automatización.\nCTA: ${cta}.`, captions:["Más consultas calif.","Procesos medibles","Automatizá el funnel",cta], shots:["Plano medio","Dashboard","CTA"], broll:["Ícono balanza","Gráfico ascendente","Agenda"] };
-    const podcast={ title:`${top} – LegalHub Podcast`, outline:["Introducción","Contexto del mercado",`Rol de ${spec}`,"Checklist","Cierre"], script:`Bienvenidos al podcast de LegalHub. Hoy: ${top}.`, duration_minutes:9 };
-    const imgs=[ {name:"portada_landing", prompt:`LegalHub, portada minimal en violeta (${BRAND.primary}) y verde (${BRAND.teal}), íconos legales sutiles, estilo limpio, espacio para titular.`, negative_prompt:"manos extrañas, texto incrustado, watermark", aspect_ratio:"16:9", variantes:2}, {name:"post_carrusel", prompt:`Carrusel sobre ${top}, tipografía Poppins, acentos cian (${BRAND.cyan}) y navy (${BRAND.navy}).`, negative_prompt:"bajo contraste, artefactos", aspect_ratio:"1:1", variantes:2} ];
-    const seo={ title:`${top} | LegalHub`, meta_description:`Estrategias para ${top} en estudios jurídicos.`, keywords:["marketing legal","abogados","seo jurídico","legaltech"] };
-    return { posts:{ instagram:[mk('instagram'), mk('instagram2')], linkedin:[mk('linkedin'), mk('linkedin2')], x:[mk('x'), mk('x2')] }, video, podcast, images:imgs, seo };
-  }
-
-  function generate(){ setResult(templated()); setTab("posts"); setError(""); }
-  function genImages(){ if(!result?.images?.length){ setError('No hay prompts'); return; } setImages(result.images.map((img,i)=>({name:img.name,url:`https://image.pollinations.ai/prompt/${encodeURIComponent(img.prompt)}?width=1024&height=1024&seed=${i}`}))); setTab('images'); }
-
-  return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-20 backdrop-blur border-b bg-white/80">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl" style={{background:BRAND.primary,color:'white'}}>LH</span>
-            <div><h1 className="text-xl font-bold" style={{color:BRAND.primaryDark}}>LegalHub – Marketing Intelligence</h1><p className="text-xs text-gray-600 -mt-0.5">Profesional • Innovador • Cercano • Claro</p></div>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-12 gap-6">
-        <aside className="col-span-12 lg:col-span-3">
-          <div className="rounded-2xl shadow p-4 bg-white">
-            <h2 className="text-sm font-semibold mb-3" style={{color:BRAND.navy}}>Especialidades de LegalHub</h2>
-            <ul className="space-y-1 max-h-[520px] overflow-auto pr-1">{SPECIALTIES.map(s=>(
-              <li key={s}><button onClick={()=>setSelected(s)} className={cx('w-full text-left px-3 py-2 rounded-xl text-sm', selected===s?'text-white':'hover:bg-gray-100')} style={selected===s?{background:BRAND.teal}:{}}>{s}</button></li>
-            ))}</ul>
-          </div>
-        </aside>
-
-        <main className="col-span-12 lg:col-span-9 space-y-6">
-          <section className="rounded-3xl p-6" style={{background:`linear-gradient(135deg, ${BRAND.primary} 0%, ${BRAND.teal} 100%)`, color:'white'}}>
-            <div className="flex flex-col gap-3">
-              <h2 className="text-2xl font-bold">Agente de Marketing Inteligente</h2>
-              <p className="text-sm text-white/90">Generá posteos, guiones de video, podcast, agenda y prompts de imagen con un brief.</p>
-              <div className="grid md:grid-cols-3 gap-3">
-                <div className="space-y-2"><label className="text-sm font-medium">Tópico</label><input className="w-full px-3 py-2 rounded-xl text-black" value={topic} onChange={e=>setTopic(e.target.value)} placeholder="SEO local para estudios jurídicos"/></div>
-                <div className="space-y-2"><label className="text-sm font-medium">Audiencia</label><input className="w-full px-3 py-2 rounded-xl text-black" value={params.audiencia} onChange={e=>setParams({...params,audiencia:e.target.value})}/></div>
-                <div className="space-y-2"><label className="text-sm font-medium">CTA</label><input className="w-full px-3 py-2 rounded-xl text-black" value={params.cta} onChange={e=>setParams({...params,cta:e.target.value})}/></div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <button onClick={generate} className="px-4 py-2 rounded-2xl bg-white text-black hover:opacity-90">Generar Contenido</button>
-                <button onClick={genImages} disabled={!result} className="px-4 py-2 rounded-2xl" style={{background:BRAND.cyan,color:'#0b1120'}}>Generar Imágenes</button>
-              </div>
-              {error && <p className="text-sm" style={{color:'#FFE4E6'}}>{error}</p>}
-            </div>
-          </section>
-
-          <div className="rounded-2xl shadow bg-white">
-            <div className="border-b px-4 pt-4">
-              <div className="flex flex-wrap gap-2">
-                {[['posts','Posteos'],['video','Video'],['podcast','Podcast'],['images','Imágenes'],['seo','SEO'],['brief','Brief JSON']].map(([v,l])=> (
-                  <button key={v} onClick={()=>setTab(v)} className={cx('px-3 py-2 rounded-t-xl text-sm', tab===v?'text-white':'hover:bg-gray-100')} style={tab===v?{background:BRAND.primary}:{}}>{l}</button>
-                ))}
-              </div>
-            </div>
-            <div className="p-4">
-              {tab==='posts' && <div className="space-y-6">{!result&&<Placeholder/>}{result&&(<><PostBlock title="Instagram" items={result.posts?.instagram||[]}/><PostBlock title="LinkedIn" items={result.posts?.linkedin||[]}/><PostBlock title="X" items={result.posts?.x||[]}/></>)}</div>}
-              {tab==='video' && <div className="space-y-4">{!result&&<Placeholder/>}{result&&(<><h3 className="text-lg font-semibold" style={{color:BRAND.navy}}>{result.video?.title}</h3><div className="grid md:grid-cols-2 gap-4"><Card title="Hook">{result.video?.hook}</Card><Card title="Subtítulos sugeridos"><ul className="list-disc pl-5 space-y-1">{(result.video?.captions||[]).map((c,i)=>(<li key={i}>{c}</li>))}</ul></Card></div><Card title="Guion (Teleprompter)"><Teleprompter text={result.video?.script||''}/></Card><div className="grid md:grid-cols-2 gap-4"><Card title="Planos / Shots"><ol className="list-decimal pl-5 space-y-1">{(result.video?.shots||[]).map((s,i)=>(<li key={i}>{s}</li>))}</ol></Card><Card title="B‑roll sugerido"><ul className="list-disc pl-5 space-y-1">{(result.video?.broll||[]).map((b,i)=>(<li key={i}>{b}</li>))}</ul></Card></div></>)}</div>}
-              {tab==='podcast' && <div className="space-y-4">{!result&&<Placeholder/>}{result&&(<><h3 className="text-lg font-semibold" style={{color:BRAND.navy}}>{result.podcast?.title}</h3><Card title="Outline"><ol className="list-decimal pl-5 space-y-1">{(result.podcast?.outline||[]).map((o,i)=>(<li key={i}>{o}</li>))}</ol></Card><Card title="Guion completo"><pre className="whitespace-pre-wrap text-sm leading-6">{result.podcast?.script}</pre></Card></>)}</div>}
-              {tab==='images' && <div className="space-y-6">{!result&&<Placeholder/>}{result&&(<><Card title="Prompts de imagen"><div className="space-y-3">{(result.images||[]).map((img,i)=>(<div key={i} className="rounded-xl border p-3 bg-gray-50"><div className="flex flex-wrap items-center justify-between gap-2 mb-2"><div className="text-sm font-medium">{img.name} <span className="text-gray-500">({img.aspect_ratio})</span></div><button onClick={()=>navigator.clipboard.writeText(img.prompt)} className="px-3 py-1.5 rounded-xl text-white" style={{background:BRAND.primary}}>Copiar prompt</button></div><p className="text-sm mb-1"><span className="font-semibold">Prompt:</span> {img.prompt}</p><p className="text-xs text-gray-600"><span className="font-semibold">Negative:</span> {img.negative_prompt}</p></div>))}</div></Card>{images?.length>0&&(<Card title="Imágenes generadas (Pollinations)"><div className="grid md:grid-cols-3 gap-4">{images.map((im,idx)=>(<figure key={idx} className="rounded-2xl overflow-hidden border"><img src={im.url} alt={im.name} className="w-full h-auto"/><figcaption className="p-2 text-sm text-center">{im.name}</figcaption></figure>))}</div></Card>)}</>)}</div>}
-              {tab==='seo' && <div className="space-y-4">{!result&&<Placeholder/>}{result&&(<><Card title="SEO Title">{result.seo?.title}</Card><Card title="Meta Description">{result.seo?.meta_description}</Card><Card title="Keywords"><div className="flex flex-wrap gap-2">{(result.seo?.keywords||[]).map((k,i)=>(<span key={i} className="px-2 py-1 rounded-full text-xs" style={{background:'#EDE9FE',color:'#4C1D95'}}>{k}</span>))}</div></Card></>)}</div>}
-              {tab==='brief' && <Card title="Brief enviado al agente"><pre className="text-xs whitespace-pre-wrap">{JSON.stringify({topico:topic,especialidad:selected,...params},null,2)}</pre></Card>}
-            </div>
-          </div>
-        </main>
-      </div>
-    </div>
-  ); 
-}
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App/>);
-</script>
+  <div id="root"></div>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
