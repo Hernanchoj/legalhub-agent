@@ -161,6 +161,13 @@ const TOOLS = [
         hashtags: "#medidordealcance #LegalHub"
       };
     }
+  },
+  {
+    id: "calendario",
+    title: "Calendario de Contenido",
+    icon: "📅",
+    description: "Generá un calendario de contenido en Excel.",
+    component: ExcelGenerator
   }
 ];
 
@@ -325,6 +332,104 @@ function ToolModal({ tool, apiKey, onClose }) {
   );
 }
 
+function ExcelGenerator() {
+  const [specialty, setSpecialty] = useState("");
+  const [contentType, setContentType] = useState("");
+  const [period, setPeriod] = useState("");
+  const [frequency, setFrequency] = useState("");
+  const [context, setContext] = useState("");
+
+  const handleGenerate = () => {
+    if (!specialty || !contentType || !period || !frequency) return;
+    const start = new Date();
+    const end = new Date(start);
+    if (period === "1 mes") end.setMonth(start.getMonth() + 1);
+    else if (period === "3 meses") end.setMonth(start.getMonth() + 3);
+    else if (period === "6 meses") end.setMonth(start.getMonth() + 6);
+
+    const step =
+      frequency === "Semanal" ? 7 : frequency === "Quincenal" ? 14 : 30;
+    const rows = [];
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + step)) {
+      rows.push({
+        Fecha: d.toISOString().split("T")[0],
+        Especialidad: specialty,
+        "Tipo de Contenido": contentType,
+        Contexto: context
+      });
+    }
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, "Calendario");
+    XLSX.writeFile(wb, "calendario_contenido.xlsx");
+  };
+
+  return (
+    <div className="space-y-4">
+      <p className="text-gray-600 text-center">
+        Define los parámetros para generar tu calendario de contenido
+      </p>
+      <div className="space-y-3">
+        <select
+          className="w-full border rounded-xl p-2"
+          value={specialty}
+          onChange={e => setSpecialty(e.target.value)}
+        >
+          <option value="">Selecciona una especialidad</option>
+          <option>Corporativo</option>
+          <option>Laboral</option>
+          <option>Tributario</option>
+          <option>Tech & Startups</option>
+        </select>
+        <select
+          className="w-full border rounded-xl p-2"
+          value={contentType}
+          onChange={e => setContentType(e.target.value)}
+        >
+          <option value="">Selecciona el tipo</option>
+          <option>Artículo</option>
+          <option>Video</option>
+          <option>Post en Redes</option>
+          <option>Infografía</option>
+        </select>
+        <select
+          className="w-full border rounded-xl p-2"
+          value={period}
+          onChange={e => setPeriod(e.target.value)}
+        >
+          <option value="">Selecciona periodo</option>
+          <option>1 mes</option>
+          <option>3 meses</option>
+          <option>6 meses</option>
+        </select>
+        <select
+          className="w-full border rounded-xl p-2"
+          value={frequency}
+          onChange={e => setFrequency(e.target.value)}
+        >
+          <option value="">¿Con qué frecuencia?</option>
+          <option>Semanal</option>
+          <option>Quincenal</option>
+          <option>Mensual</option>
+        </select>
+        <textarea
+          className="w-full border rounded-xl p-2"
+          placeholder="Contexto adicional"
+          value={context}
+          onChange={e => setContext(e.target.value)}
+        />
+        <button
+          onClick={handleGenerate}
+          className="w-full px-4 py-2 rounded-xl text-white"
+          style={{ background: BRAND.primary }}
+        >
+          Generar Calendario de Contenido
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [active, setActive] = useState(null);
   const [apiKey, setApiKey] = useState(
@@ -403,7 +508,27 @@ function App() {
       </section>
 
       {active && (
-        <ToolModal tool={active} apiKey={apiKey} onClose={() => setActive(null)} />
+        active.component ? (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 overflow-auto">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-4xl space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold" style={{ color: BRAND.navy }}>
+                  {active.title}
+                </h3>
+                <button onClick={() => setActive(null)} className="text-gray-500">
+                  ✖️
+                </button>
+              </div>
+              <active.component />
+            </div>
+          </div>
+        ) : (
+          <ToolModal
+            tool={active}
+            apiKey={apiKey}
+            onClose={() => setActive(null)}
+          />
+        )
       )}
     </div>
   );
