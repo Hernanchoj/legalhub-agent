@@ -365,7 +365,17 @@ function ExcelGenerator() {
   };
 
   return (
+ codex/add-excel-generation-for-visualization-s5fsag
     <div className="space-y-4">
+
+    <div className="bg-white rounded-2xl shadow p-6 space-y-4">
+      <h3
+        className="text-xl font-semibold text-center"
+        style={{ color: BRAND.navy }}
+      >
+        Configuración del Excel
+      </h3>
+ main
       <p className="text-gray-600 text-center">
         Define los parámetros para generar tu calendario de contenido
       </p>
@@ -470,6 +480,9 @@ function App() {
           />
         </div>
       </header>
+      <section className="max-w-3xl mx-auto px-4 mb-8">
+        <ExcelGenerator />
+      </section>
 
       <section className="max-w-5xl mx-auto px-4 space-y-6">
         <div className="text-center">
