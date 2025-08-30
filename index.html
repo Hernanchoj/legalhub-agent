@@ -2,14 +2,17 @@
 <html lang="es">
 <head>
   <meta charset="utf-8"/>
+  <base href="/legalhub-agent/">
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Marketing Legal Hub</title>
+  <title>LegalHub Marketing Agent</title>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.0.3/docx.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PptxGenJS/3.11.1/pptxgen.min.js"></script>
   <style>
     :root{ --lh-bg:#F2F2F7; --lh-primary:#60189C; --lh-teal:#00B989; --lh-navy:#172755; --lh-cyan:#41E1F2; }
     body{ font-family:'Open Sans',system-ui,Segoe UI,Roboto,Arial,sans-serif; background:var(--lh-bg); }
@@ -18,10 +21,6 @@
 </head>
 <body>
   <div id="root"></div>
-  <script
-    type="text/babel"
-    src="app.js"
-    data-presets="env,react">
-  </script>
+  <script type="text/babel" src="app.js" data-presets="env,react"></script>
 </body>
 </html>
