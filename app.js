@@ -161,6 +161,13 @@ const TOOLS = [
         hashtags: "#medidordealcance #LegalHub"
       };
     }
+  },
+  {
+    id: "calendario",
+    title: "Calendario de Contenido",
+    icon: "📅",
+    description: "Generá un calendario de contenido en Excel.",
+    component: ExcelGenerator
   }
 ];
 
@@ -358,6 +365,9 @@ function ExcelGenerator() {
   };
 
   return (
+ codex/add-excel-generation-for-visualization-s5fsag
+    <div className="space-y-4">
+
     <div className="bg-white rounded-2xl shadow p-6 space-y-4">
       <h3
         className="text-xl font-semibold text-center"
@@ -365,6 +375,7 @@ function ExcelGenerator() {
       >
         Configuración del Excel
       </h3>
+ main
       <p className="text-gray-600 text-center">
         Define los parámetros para generar tu calendario de contenido
       </p>
@@ -510,7 +521,27 @@ function App() {
       </section>
 
       {active && (
-        <ToolModal tool={active} apiKey={apiKey} onClose={() => setActive(null)} />
+        active.component ? (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 overflow-auto">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-4xl space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold" style={{ color: BRAND.navy }}>
+                  {active.title}
+                </h3>
+                <button onClick={() => setActive(null)} className="text-gray-500">
+                  ✖️
+                </button>
+              </div>
+              <active.component />
+            </div>
+          </div>
+        ) : (
+          <ToolModal
+            tool={active}
+            apiKey={apiKey}
+            onClose={() => setActive(null)}
+          />
+        )
       )}
     </div>
   );
