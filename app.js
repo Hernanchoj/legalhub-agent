@@ -41,6 +41,24 @@ const TOOLS = [
     icon: "🎬",
     description:
       "Generación de posts creativos con enfoque audio-visual y recomendaciones de imágenes.",
+    fields: [
+      {
+        name: "type",
+        label: "Tipo de Contenido",
+        options: ["Post", "Video", "Artículo"]
+      },
+      {
+        name: "platform",
+        label: "Plataforma",
+        options: ["Instagram", "LinkedIn", "YouTube"]
+      },
+      {
+        name: "audience",
+        label: "Audiencia Objetivo",
+        options: ["Público general", "Empresas", "Startups"]
+      },
+      { name: "context", label: "Contexto adicional", type: "textarea" }
+    ],
     action({ type, platform, audience, context }) {
       return {
         hook: `Mostrá ${context} con un ${type || "contenido"} pensado para ${platform}`,
@@ -55,6 +73,19 @@ const TOOLS = [
     title: "Generación de Propuestas",
     icon: "📄",
     description: "Estructura propuestas comerciales personalizadas.",
+    fields: [
+      {
+        name: "specialty",
+        label: "Especialidad Legal Hub",
+        options: ["Corporativo", "Laboral", "Tributario"]
+      },
+      {
+        name: "audience",
+        label: "Audiencia Objetivo",
+        options: ["Público general", "Empresas", "Startups"]
+      },
+      { name: "context", label: "Contexto adicional", type: "textarea" }
+    ],
     action({ specialty, audience, context }) {
       return {
         hook: `Presentá tu propuesta de ${specialty || context} enfocada en ${audience || "tu cliente"}`,
@@ -69,6 +100,19 @@ const TOOLS = [
     title: "Presentaciones",
     icon: "📊",
     description: "Crea diapositivas profesionales para tus reuniones.",
+    fields: [
+      {
+        name: "format",
+        label: "Formato de Presentación",
+        options: ["PowerPoint", "PDF", "Keynote"]
+      },
+      {
+        name: "audience",
+        label: "Audiencia Objetivo",
+        options: ["Público general", "Empresas", "Startups"]
+      },
+      { name: "context", label: "Contexto adicional", type: "textarea" }
+    ],
     action({ format, audience, context }) {
       return {
         hook: `Abrí la presentación de ${context} con un dato clave para ${audience}`,
@@ -83,6 +127,19 @@ const TOOLS = [
     title: "Branding",
     icon: "🎨",
     description: "Define tono y estilo de tu marca.",
+    fields: [
+      {
+        name: "audience",
+        label: "Audiencia Objetivo",
+        options: ["Público general", "Empresas", "Startups"]
+      },
+      {
+        name: "platform",
+        label: "Plataforma",
+        options: ["Instagram", "LinkedIn", "Sitio Web"]
+      },
+      { name: "context", label: "Contexto adicional", type: "textarea" }
+    ],
     action({ audience, context, platform }) {
       return {
         hook: `Construí una identidad que refleje ${context} ante ${audience}`,
@@ -97,6 +154,19 @@ const TOOLS = [
     title: "Email Marketing & CRM",
     icon: "📧",
     description: "Secuencias automatizadas para convertir leads.",
+    fields: [
+      {
+        name: "type",
+        label: "Tipo de Email",
+        options: ["Boletín", "Seguimiento", "Promocional"]
+      },
+      {
+        name: "audience",
+        label: "Audiencia Objetivo",
+        options: ["Público general", "Empresas", "Startups"]
+      },
+      { name: "context", label: "Contexto adicional", type: "textarea" }
+    ],
     action({ audience, context, type }) {
       return {
         hook: `Personalizá el asunto del ${type || "correo"} sobre ${context}`,
@@ -111,6 +181,19 @@ const TOOLS = [
     title: "Optimización SEO Legal",
     icon: "🔍",
     description: "Palabras clave y optimización on-page.",
+    fields: [
+      {
+        name: "specialty",
+        label: "Especialidad Legal Hub",
+        options: ["Corporativo", "Laboral", "Tributario"]
+      },
+      {
+        name: "platform",
+        label: "Plataforma",
+        options: ["Sitio Web", "Blog", "Landing Page"]
+      },
+      { name: "context", label: "Contexto adicional", type: "textarea" }
+    ],
     action({ specialty, context, platform }) {
       return {
         hook: `Atraé búsquedas sobre ${context} en ${platform || "tu sitio"}`,
@@ -125,6 +208,24 @@ const TOOLS = [
     title: "Apolo Legal",
     icon: "🚀",
     description: "Planifica lanzamientos con IA.",
+    fields: [
+      {
+        name: "type",
+        label: "Tipo de Lanzamiento",
+        options: ["Lanzamiento", "Relanzamiento"]
+      },
+      {
+        name: "platform",
+        label: "Plataforma",
+        options: ["Instagram", "LinkedIn", "YouTube"]
+      },
+      {
+        name: "audience",
+        label: "Audiencia Objetivo",
+        options: ["Público general", "Empresas", "Startups"]
+      },
+      { name: "context", label: "Contexto adicional", type: "textarea" }
+    ],
     action({ type, platform, context, audience }) {
       return {
         hook: `Generá expectativa por el lanzamiento de ${context} para ${audience}`,
@@ -139,6 +240,23 @@ const TOOLS = [
     title: "Agenda",
     icon: "🗓️",
     description: "Organiza contenidos y recordatorios.",
+    fields: [
+      {
+        name: "format",
+        label: "Formato",
+        options: ["Webinar", "Workshop", "Evento presencial"]
+      },
+      {
+        name: "context",
+        label: "Evento",
+        type: "textarea"
+      },
+      {
+        name: "audience",
+        label: "Audiencia Objetivo",
+        options: ["Público general", "Empresas", "Startups"]
+      }
+    ],
     action({ format, context, audience }) {
       return {
         hook: `Recordá a ${audience} el evento ${context}`,
@@ -153,6 +271,19 @@ const TOOLS = [
     title: "Medidor de Alcance",
     icon: "📈",
     description: "Estimá el alcance de tus campañas.",
+    fields: [
+      {
+        name: "platform",
+        label: "Plataforma",
+        options: ["Instagram", "LinkedIn", "YouTube"]
+      },
+      {
+        name: "audience",
+        label: "Audiencia Objetivo",
+        options: ["Público general", "Empresas", "Startups"]
+      },
+      { name: "context", label: "Contexto adicional", type: "textarea" }
+    ],
     action({ platform, audience, context }) {
       return {
         hook: `Estimá el alcance de ${context} en ${platform}`,
@@ -172,14 +303,11 @@ const TOOLS = [
 ];
 
 function ToolModal({ tool, apiKey, onClose }) {
-  const [config, setConfig] = useState({
-    type: "",
-    specialty: "",
-    platform: "",
-    format: "",
-    audience: "",
-    context: ""
+  const initialConfig = {};
+  tool.fields?.forEach(f => {
+    initialConfig[f.name] = "";
   });
+  const [config, setConfig] = useState(initialConfig);
   const [strategy, setStrategy] = useState(null);
 
   const handleChange = (field, value) => {
@@ -199,88 +327,55 @@ function ToolModal({ tool, apiKey, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 overflow-auto">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-4xl space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold" style={{ color: BRAND.navy }}>
-            {tool.title}
-          </h3>
-          <button onClick={onClose} className="text-gray-500">
-            ✖️
-          </button>
-        </div>
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="space-y-3">
-            <h4 className="font-semibold" style={{ color: BRAND.primary }}>
-              Configuración del Contenido
-            </h4>
-            <select
-              className="w-full border rounded-xl p-2"
-              value={config.type}
-              onChange={e => handleChange("type", e.target.value)}
-            >
-              <option value="">Tipo de Contenido</option>
-              <option>Post</option>
-              <option>Video</option>
-              <option>Artículo</option>
-            </select>
-            <select
-              className="w-full border rounded-xl p-2"
-              value={config.specialty}
-              onChange={e => handleChange("specialty", e.target.value)}
-            >
-              <option value="">Especialidad Legal Hub</option>
-              <option>Corporativo</option>
-              <option>Laboral</option>
-              <option>Tributario</option>
-            </select>
-            <select
-              className="w-full border rounded-xl p-2"
-              value={config.platform}
-              onChange={e => handleChange("platform", e.target.value)}
-            >
-              <option value="">Plataforma</option>
-              <option>Instagram</option>
-              <option>LinkedIn</option>
-              <option>YouTube</option>
-            </select>
-            <select
-              className="w-full border rounded-xl p-2"
-              value={config.format}
-              onChange={e => handleChange("format", e.target.value)}
-            >
-              <option value="">Formato de Contenido</option>
-              <option>Reel</option>
-              <option>Posteo</option>
-              <option>Blog</option>
-            </select>
-            <select
-              className="w-full border rounded-xl p-2"
-              value={config.audience}
-              onChange={e => handleChange("audience", e.target.value)}
-            >
-              <option value="">Audiencia Objetivo</option>
-              <option>Público general</option>
-              <option>Empresas</option>
-              <option>Startups</option>
-            </select>
-            <textarea
-              className="w-full border rounded-xl p-2"
-              placeholder="Contexto adicional"
-              value={config.context}
-              onChange={e => handleChange("context", e.target.value)}
-            />
-            <button
-              onClick={handleGenerate}
-              className="px-4 py-2 rounded-xl text-white"
-              style={{ background: BRAND.teal }}
-            >
-              Generar
+        <div className="bg-white rounded-2xl p-6 w-full max-w-4xl space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold" style={{ color: BRAND.navy }}>
+              {tool.title}
+            </h3>
+            <button onClick={onClose} className="text-gray-500">
+              ✖️
             </button>
           </div>
-          <div className="space-y-3">
-            <h4 className="font-semibold" style={{ color: BRAND.primary }}>
-              Estrategia de Contenido
-            </h4>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <h4 className="font-semibold" style={{ color: BRAND.primary }}>
+                Configuración del Contenido
+              </h4>
+              {tool.fields?.map(field =>
+                field.type === "textarea" ? (
+                  <textarea
+                    key={field.name}
+                    className="w-full border rounded-xl p-2"
+                    placeholder={field.label}
+                    value={config[field.name]}
+                    onChange={e => handleChange(field.name, e.target.value)}
+                  />
+                ) : (
+                  <select
+                    key={field.name}
+                    className="w-full border rounded-xl p-2"
+                    value={config[field.name]}
+                    onChange={e => handleChange(field.name, e.target.value)}
+                  >
+                    <option value="">{field.label}</option>
+                    {field.options?.map(opt => (
+                      <option key={opt}>{opt}</option>
+                    ))}
+                  </select>
+                )
+              )}
+              <button
+                onClick={handleGenerate}
+                className="px-4 py-2 rounded-xl text-white"
+                style={{ background: BRAND.teal }}
+              >
+                Generar
+              </button>
+            </div>
+            <div className="space-y-3">
+              <h4 className="font-semibold" style={{ color: BRAND.primary }}>
+                Estrategia de Contenido
+              </h4>
             {strategy ? (
               <>
                 <div>
@@ -364,22 +459,19 @@ function ExcelGenerator() {
     XLSX.writeFile(wb, "calendario_contenido.xlsx");
   };
 
-  return (
- codex/add-excel-generation-for-visualization-s5fsag
-    <div className="space-y-4">
-
-    <div className="bg-white rounded-2xl shadow p-6 space-y-4">
-      <h3
-        className="text-xl font-semibold text-center"
-        style={{ color: BRAND.navy }}
-      >
-        Configuración del Excel
-      </h3>
- main
-      <p className="text-gray-600 text-center">
-        Define los parámetros para generar tu calendario de contenido
-      </p>
-      <div className="space-y-3">
+    return (
+      <div className="space-y-4">
+        <div className="bg-white rounded-2xl shadow p-6 space-y-4">
+          <h3
+            className="text-xl font-semibold text-center"
+            style={{ color: BRAND.navy }}
+          >
+            Configuración del Excel
+          </h3>
+          <p className="text-gray-600 text-center">
+            Define los parámetros para generar tu calendario de contenido
+          </p>
+          <div className="space-y-3">
         <select
           className="w-full border rounded-xl p-2"
           value={specialty}
