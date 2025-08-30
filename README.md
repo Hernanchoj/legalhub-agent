@@ -6,8 +6,8 @@ Sitio listo para publicar sin build. Incluye:
 - React vía CDN (esm.run)
 - Tailwind vía CDN
 - Generación de texto por plantillas (funciona sin API)
-- Opción de usar OpenAI si pegas tu API key (cliente, solo demo)
-- Imágenes con Pollinations (sin clave)
+- Campo para pegar tu API key de OpenAI y generar con `gpt-4o-mini`
+- Imágenes generadas con Pollinations (sin clave)
 - Exportables: CSV, ICS, PPTX y DOCX via ESM (pptxgenjs/docx)
 
 ## Cómo publicarlo en GitHub Pages
@@ -20,4 +20,4 @@ Sitio listo para publicar sin build. Incluye:
 7. Abre el link: verás la app funcionando.
 
 > Sin API key ya puedes generar contenido (modo plantillas) y usar imágenes (Pollinations).
-> Si pegas una API key de OpenAI, se intentará generar con `gpt-4o-mini` desde el navegador.
+> Si pegas una API key de OpenAI en el campo superior, se intentará generar con `gpt-4o-mini` desde el navegador.
