@@ -16,72 +16,151 @@ const TOOLS = [
     icon: "🎬",
     description:
       "Generación de posts creativos con enfoque audio-visual y recomendaciones de imágenes.",
-    action: input => `Post creativo sobre "${input}".`
+    action(input) {
+      return {
+        hook: `Captá la atención hablando de ${input} con un recurso visual potente`,
+        value: `Mostrá el valor de ${input} utilizando formatos multimedia`,
+        cta: `Invitá a profundizar en ${input} con un video o podcast`,
+        hashtags: "#multimedia #LegalHub"
+      };
+    }
   },
   {
     id: "propuestas",
     title: "Generación de Propuestas",
     icon: "📄",
     description: "Estructura propuestas comerciales personalizadas.",
-    action: input => `Propuesta para "${input}" lista.`
+    action(input) {
+      return {
+        hook: `Introducí ${input} destacando el problema del cliente`,
+        value: `Explicá cómo tu propuesta de ${input} resuelve la necesidad`,
+        cta: `Cerrá invitando a revisar la propuesta de ${input} en detalle`,
+        hashtags: "#propuesta #LegalHub"
+      };
+    }
   },
   {
     id: "presentaciones",
     title: "Presentaciones",
     icon: "📊",
     description: "Crea diapositivas profesionales para tus reuniones.",
-    action: input => `Presentación para "${input}" creada.`
+    action(input) {
+      return {
+        hook: `Abrí la presentación sobre ${input} con un dato impactante`,
+        value: `Desarrollá la idea central de ${input} con gráficos claros`,
+        cta: `Finalizá invitando a actuar sobre ${input}`,
+        hashtags: "#presentaciones #LegalHub"
+      };
+    }
   },
   {
     id: "branding",
     title: "Branding",
     icon: "🎨",
     description: "Define tono y estilo de tu marca.",
-    action: input => `Guía de branding para "${input}".`
+    action(input) {
+      return {
+        hook: `Conectá con tu audiencia resaltando ${input}`,
+        value: `Explicá el ADN de marca alrededor de ${input}`,
+        cta: `Invitá a vivir la experiencia ${input}`,
+        hashtags: "#branding #LegalHub"
+      };
+    }
   },
   {
     id: "email",
     title: "Email Marketing & CRM",
     icon: "📧",
     description: "Secuencias automatizadas para convertir leads.",
-    action: input => `Secuencia de email sobre "${input}".`
+    action(input) {
+      return {
+        hook: `Comenzá el correo sobre ${input} con una frase empática`,
+        value: `Detallá beneficios clave de ${input} en tu mensaje`,
+        cta: `Concluí invitando a responder sobre ${input}`,
+        hashtags: "#emailmarketing #LegalHub"
+      };
+    }
   },
   {
     id: "seo",
     title: "Optimización SEO Legal",
     icon: "🔍",
     description: "Palabras clave y optimización on-page.",
-    action: input => `Ideas de SEO para "${input}".`
+    action(input) {
+      return {
+        hook: `Llamá la atención sobre ${input} con una pregunta`,
+        value: `Desarrollá contenido optimizado para ${input}`,
+        cta: `Invitá a leer más sobre ${input} en tu sitio`,
+        hashtags: "#seo #LegalHub"
+      };
+    }
   },
   {
     id: "apolo",
     title: "Apolo Legal",
     icon: "🚀",
     description: "Planifica lanzamientos con IA.",
-    action: input => `Lanzamiento planificado para "${input}".`
+    action(input) {
+      return {
+        hook: `Generá expectativa sobre el lanzamiento de ${input}`,
+        value: `Mostrá la propuesta de valor detrás de ${input}`,
+        cta: `Invitá a sumarse al lanzamiento de ${input}`,
+        hashtags: "#apolo #LegalHub"
+      };
+    }
   },
   {
     id: "agenda",
     title: "Agenda",
     icon: "🗓️",
     description: "Organiza contenidos y recordatorios.",
-    action: input => `Evento añadido: "${input}".`
+    action(input) {
+      return {
+        hook: `Anunciá el evento ${input} destacando su relevancia`,
+        value: `Recordá los detalles clave de ${input}`,
+        cta: `Invitá a agendar ${input}`,
+        hashtags: "#agenda #LegalHub"
+      };
+    }
   },
   {
     id: "medidor",
     title: "Medidor de Alcance",
     icon: "📈",
     description: "Estimá el alcance de tus campañas.",
-    action: input => `Alcance estimado para "${input}" de 1000+ usuarios.`
+    action(input) {
+      return {
+        hook: `Presentá la campaña ${input} con una promesa de alcance`,
+        value: `Compartí proyecciones de resultados para ${input}`,
+        cta: `Motivá a lanzar la campaña ${input}`,
+        hashtags: "#medidordealcance #LegalHub"
+      };
+    }
   }
 ];
 
 function ToolModal({ tool, onClose }) {
-  const [input, setInput] = useState("");
-  const [output, setOutput] = useState("");
+  const [config, setConfig] = useState({
+    type: "",
+    specialty: "",
+    platform: "",
+    format: "",
+    audience: "",
+    context: ""
+  });
+  const [strategy, setStrategy] = useState(null);
+
+  const handleChange = (field, value) => {
+    setConfig(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleGenerate = () => {
+    setStrategy(tool.action(config.context));
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md space-y-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 overflow-auto">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-4xl space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold" style={{ color: BRAND.navy }}>
             {tool.title}
@@ -90,24 +169,113 @@ function ToolModal({ tool, onClose }) {
             ✖️
           </button>
         </div>
-        <textarea
-          className="w-full border rounded-xl p-2"
-          placeholder="Describe tu necesidad"
-          value={input}
-          onChange={e => setInput(e.target.value)}
-        />
-        <button
-          onClick={() => setOutput(tool.action(input))}
-          className="px-4 py-2 rounded-xl text-white"
-          style={{ background: BRAND.teal }}
-        >
-          Generar
-        </button>
-        {output && (
-          <pre className="bg-gray-100 p-3 rounded-xl whitespace-pre-wrap text-sm">
-            {output}
-          </pre>
-        )}
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="space-y-3">
+            <h4 className="font-semibold" style={{ color: BRAND.primary }}>
+              Configuración del Contenido
+            </h4>
+            <select
+              className="w-full border rounded-xl p-2"
+              value={config.type}
+              onChange={e => handleChange("type", e.target.value)}
+            >
+              <option value="">Tipo de Contenido</option>
+              <option>Post</option>
+              <option>Video</option>
+              <option>Artículo</option>
+            </select>
+            <select
+              className="w-full border rounded-xl p-2"
+              value={config.specialty}
+              onChange={e => handleChange("specialty", e.target.value)}
+            >
+              <option value="">Especialidad Legal Hub</option>
+              <option>Corporativo</option>
+              <option>Laboral</option>
+              <option>Tributario</option>
+            </select>
+            <select
+              className="w-full border rounded-xl p-2"
+              value={config.platform}
+              onChange={e => handleChange("platform", e.target.value)}
+            >
+              <option value="">Plataforma</option>
+              <option>Instagram</option>
+              <option>LinkedIn</option>
+              <option>YouTube</option>
+            </select>
+            <select
+              className="w-full border rounded-xl p-2"
+              value={config.format}
+              onChange={e => handleChange("format", e.target.value)}
+            >
+              <option value="">Formato de Contenido</option>
+              <option>Reel</option>
+              <option>Posteo</option>
+              <option>Blog</option>
+            </select>
+            <select
+              className="w-full border rounded-xl p-2"
+              value={config.audience}
+              onChange={e => handleChange("audience", e.target.value)}
+            >
+              <option value="">Audiencia Objetivo</option>
+              <option>Público general</option>
+              <option>Empresas</option>
+              <option>Startups</option>
+            </select>
+            <textarea
+              className="w-full border rounded-xl p-2"
+              placeholder="Contexto adicional"
+              value={config.context}
+              onChange={e => handleChange("context", e.target.value)}
+            />
+            <button
+              onClick={handleGenerate}
+              className="px-4 py-2 rounded-xl text-white"
+              style={{ background: BRAND.teal }}
+            >
+              Generar
+            </button>
+          </div>
+          <div className="space-y-3">
+            <h4 className="font-semibold" style={{ color: BRAND.primary }}>
+              Estrategia de Contenido
+            </h4>
+            {strategy ? (
+              <>
+                <div>
+                  <h5 className="text-sm font-semibold text-purple-600">
+                    Hook Emocional
+                  </h5>
+                  <p className="bg-gray-100 p-2 rounded-xl text-sm">{strategy.hook}</p>
+                </div>
+                <div>
+                  <h5 className="text-sm font-semibold text-teal-600">
+                    Valor Educativo
+                  </h5>
+                  <p className="bg-gray-100 p-2 rounded-xl text-sm">{strategy.value}</p>
+                </div>
+                <div>
+                  <h5 className="text-sm font-semibold text-orange-500">
+                    Call to Action
+                  </h5>
+                  <p className="bg-gray-100 p-2 rounded-xl text-sm">{strategy.cta}</p>
+                </div>
+                <div>
+                  <h5 className="text-sm font-semibold text-blue-600">
+                    Hashtags Relevantes
+                  </h5>
+                  <p className="bg-gray-100 p-2 rounded-xl text-sm">{strategy.hashtags}</p>
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-gray-500">
+                Completá la configuración y generá la estrategia.
+              </p>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
