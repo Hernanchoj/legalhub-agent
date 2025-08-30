@@ -16,12 +16,12 @@ const TOOLS = [
     icon: "🎬",
     description:
       "Generación de posts creativos con enfoque audio-visual y recomendaciones de imágenes.",
-    action(input) {
+    action({ type, platform, audience, context }) {
       return {
-        hook: `Captá la atención hablando de ${input} con un recurso visual potente`,
-        value: `Mostrá el valor de ${input} utilizando formatos multimedia`,
-        cta: `Invitá a profundizar en ${input} con un video o podcast`,
-        hashtags: "#multimedia #LegalHub"
+        hook: `Mostrá ${context} con un ${type || "contenido"} pensado para ${platform}`,
+        value: `Usá recursos visuales que conecten con ${audience || "tu audiencia"}`,
+        cta: `Invitá a interactuar y compartir en ${platform}`,
+        hashtags: `#multimedia ${platform ? "#" + platform.toLowerCase() + " " : ""}#LegalHub`
       };
     }
   },
@@ -30,12 +30,12 @@ const TOOLS = [
     title: "Generación de Propuestas",
     icon: "📄",
     description: "Estructura propuestas comerciales personalizadas.",
-    action(input) {
+    action({ specialty, audience, context }) {
       return {
-        hook: `Introducí ${input} destacando el problema del cliente`,
-        value: `Explicá cómo tu propuesta de ${input} resuelve la necesidad`,
-        cta: `Cerrá invitando a revisar la propuesta de ${input} en detalle`,
-        hashtags: "#propuesta #LegalHub"
+        hook: `Presentá tu propuesta de ${specialty || context} enfocada en ${audience || "tu cliente"}`,
+        value: `Demostrá cómo ${context} cubre las necesidades legales`,
+        cta: `Invitá a profundizar en la solución`,
+        hashtags: `#propuesta ${specialty ? "#" + specialty.toLowerCase() + " " : ""}#LegalHub`
       };
     }
   },
@@ -44,12 +44,12 @@ const TOOLS = [
     title: "Presentaciones",
     icon: "📊",
     description: "Crea diapositivas profesionales para tus reuniones.",
-    action(input) {
+    action({ format, audience, context }) {
       return {
-        hook: `Abrí la presentación sobre ${input} con un dato impactante`,
-        value: `Desarrollá la idea central de ${input} con gráficos claros`,
-        cta: `Finalizá invitando a actuar sobre ${input}`,
-        hashtags: "#presentaciones #LegalHub"
+        hook: `Abrí la presentación de ${context} con un dato clave para ${audience}`,
+        value: `Usá el formato ${format} para resaltar los puntos principales`,
+        cta: `Cerrá motivando a actuar sobre ${context}`,
+        hashtags: `#presentaciones ${format ? "#" + format.toLowerCase() + " " : ""}#LegalHub`
       };
     }
   },
@@ -58,12 +58,12 @@ const TOOLS = [
     title: "Branding",
     icon: "🎨",
     description: "Define tono y estilo de tu marca.",
-    action(input) {
+    action({ audience, context, platform }) {
       return {
-        hook: `Conectá con tu audiencia resaltando ${input}`,
-        value: `Explicá el ADN de marca alrededor de ${input}`,
-        cta: `Invitá a vivir la experiencia ${input}`,
-        hashtags: "#branding #LegalHub"
+        hook: `Construí una identidad que refleje ${context} ante ${audience}`,
+        value: `Definí tono y estilo coherente para ${platform}`,
+        cta: `Invitá a experimentar la esencia de ${context}`,
+        hashtags: `#branding ${platform ? "#" + platform.toLowerCase() + " " : ""}#LegalHub`
       };
     }
   },
@@ -72,12 +72,12 @@ const TOOLS = [
     title: "Email Marketing & CRM",
     icon: "📧",
     description: "Secuencias automatizadas para convertir leads.",
-    action(input) {
+    action({ audience, context, type }) {
       return {
-        hook: `Comenzá el correo sobre ${input} con una frase empática`,
-        value: `Detallá beneficios clave de ${input} en tu mensaje`,
-        cta: `Concluí invitando a responder sobre ${input}`,
-        hashtags: "#emailmarketing #LegalHub"
+        hook: `Personalizá el asunto del ${type || "correo"} sobre ${context}`,
+        value: `Segmentá el mensaje para ${audience}`,
+        cta: `Incluí un llamado claro a responder`,
+        hashtags: "#emailmarketing #crm #LegalHub"
       };
     }
   },
@@ -86,12 +86,12 @@ const TOOLS = [
     title: "Optimización SEO Legal",
     icon: "🔍",
     description: "Palabras clave y optimización on-page.",
-    action(input) {
+    action({ specialty, context, platform }) {
       return {
-        hook: `Llamá la atención sobre ${input} con una pregunta`,
-        value: `Desarrollá contenido optimizado para ${input}`,
-        cta: `Invitá a leer más sobre ${input} en tu sitio`,
-        hashtags: "#seo #LegalHub"
+        hook: `Atraé búsquedas sobre ${context} en ${platform || "tu sitio"}`,
+        value: `Incluí keywords legales de ${specialty}`,
+        cta: `Invitá a leer más sobre ${context}`,
+        hashtags: `#seo ${specialty ? "#" + specialty.toLowerCase() + " " : ""}#LegalHub`
       };
     }
   },
@@ -100,12 +100,12 @@ const TOOLS = [
     title: "Apolo Legal",
     icon: "🚀",
     description: "Planifica lanzamientos con IA.",
-    action(input) {
+    action({ type, platform, context, audience }) {
       return {
-        hook: `Generá expectativa sobre el lanzamiento de ${input}`,
-        value: `Mostrá la propuesta de valor detrás de ${input}`,
-        cta: `Invitá a sumarse al lanzamiento de ${input}`,
-        hashtags: "#apolo #LegalHub"
+        hook: `Generá expectativa por el lanzamiento de ${context} para ${audience}`,
+        value: `Planificá un cronograma ${type} adaptado a ${platform}`,
+        cta: `Llamá a registrarse para ${context}`,
+        hashtags: "#apolo #lanzamiento #LegalHub"
       };
     }
   },
@@ -114,11 +114,11 @@ const TOOLS = [
     title: "Agenda",
     icon: "🗓️",
     description: "Organiza contenidos y recordatorios.",
-    action(input) {
+    action({ format, context, audience }) {
       return {
-        hook: `Anunciá el evento ${input} destacando su relevancia`,
-        value: `Recordá los detalles clave de ${input}`,
-        cta: `Invitá a agendar ${input}`,
+        hook: `Recordá a ${audience} el evento ${context}`,
+        value: `Detallá fecha y formato ${format}`,
+        cta: `Invitá a agendar en su calendario`,
         hashtags: "#agenda #LegalHub"
       };
     }
@@ -128,11 +128,11 @@ const TOOLS = [
     title: "Medidor de Alcance",
     icon: "📈",
     description: "Estimá el alcance de tus campañas.",
-    action(input) {
+    action({ platform, audience, context }) {
       return {
-        hook: `Presentá la campaña ${input} con una promesa de alcance`,
-        value: `Compartí proyecciones de resultados para ${input}`,
-        cta: `Motivá a lanzar la campaña ${input}`,
+        hook: `Estimá el alcance de ${context} en ${platform}`,
+        value: `Calculá resultados potenciales considerando a ${audience}`,
+        cta: `Motivá a lanzar la campaña`,
         hashtags: "#medidordealcance #LegalHub"
       };
     }
@@ -155,7 +155,7 @@ function ToolModal({ tool, onClose }) {
   };
 
   const handleGenerate = () => {
-    setStrategy(tool.action(config.context));
+    setStrategy(tool.action(config));
   };
 
   return (
