@@ -1,644 +1,577 @@
 const { useState } = React;
 
-// Llama a OpenAI si hay una API key disponible
-async function generateAIResponse(tool, config, apiKey) {
-  const prompt = `Eres un agente de marketing de LegalHub. Usando la herramienta ${tool.title}, genera un JSON con las claves hook, value, cta y hashtags en español. Configuración: ${JSON.stringify(config)}.`;
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7
-    })
-  });
-  const data = await res.json();
-  const text = data.choices?.[0]?.message?.content || "";
+async function generateText(prompt, apiKey) {
+  if (!apiKey) {
+    return `LITE: ${prompt}`;
+  }
   try {
-    return JSON.parse(text);
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7
+      })
+    });
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content?.trim() || "";
   } catch (err) {
-    console.error("Respuesta AI inválida", err);
-    return null;
+    console.error(err);
+    return "";
   }
 }
 
-// Paleta de colores de LegalHub
-const BRAND = {
-  bg: "#F2F2F7",
-  primary: "#60189C",
-  teal: "#00B989",
-  navy: "#172755"
-};
+function download(filename, content, type) {
+  const blob = content instanceof Blob ? content : new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
-// Definición de herramientas disponibles
-const TOOLS = [
-  {
-    id: "multimedia",
-    title: "Contenido Multimedia",
-    icon: "🎬",
-    description:
-      "Generación de posts creativos con enfoque audio-visual y recomendaciones de imágenes.",
-    fields: [
-      {
-        name: "type",
-        label: "Tipo de Contenido",
-        options: ["Post", "Video", "Artículo"]
-      },
-      {
-        name: "platform",
-        label: "Plataforma",
-        options: ["Instagram", "LinkedIn", "YouTube"]
-      },
-      {
-        name: "audience",
-        label: "Audiencia Objetivo",
-        options: ["Público general", "Empresas", "Startups"]
-      },
-      { name: "context", label: "Contexto adicional", type: "textarea" }
-    ],
-    action({ type, platform, audience, context }) {
-      return {
-        hook: `Mostrá ${context} con un ${type || "contenido"} pensado para ${platform}`,
-        value: `Usá recursos visuales que conecten con ${audience || "tu audiencia"}`,
-        cta: `Invitá a interactuar y compartir en ${platform}`,
-        hashtags: `#multimedia ${platform ? "#" + platform.toLowerCase() + " " : ""}#LegalHub`
-      };
-    }
-  },
-  {
-    id: "propuestas",
-    title: "Generación de Propuestas",
-    icon: "📄",
-    description: "Estructura propuestas comerciales personalizadas.",
-    fields: [
-      {
-        name: "specialty",
-        label: "Especialidad Legal Hub",
-        options: ["Corporativo", "Laboral", "Tributario"]
-      },
-      {
-        name: "audience",
-        label: "Audiencia Objetivo",
-        options: ["Público general", "Empresas", "Startups"]
-      },
-      { name: "context", label: "Contexto adicional", type: "textarea" }
-    ],
-    action({ specialty, audience, context }) {
-      return {
-        hook: `Presentá tu propuesta de ${specialty || context} enfocada en ${audience || "tu cliente"}`,
-        value: `Demostrá cómo ${context} cubre las necesidades legales`,
-        cta: `Invitá a profundizar en la solución`,
-        hashtags: `#propuesta ${specialty ? "#" + specialty.toLowerCase() + " " : ""}#LegalHub`
-      };
-    }
-  },
-  {
-    id: "presentaciones",
-    title: "Presentaciones",
-    icon: "📊",
-    description: "Crea diapositivas profesionales para tus reuniones.",
-    fields: [
-      {
-        name: "format",
-        label: "Formato de Presentación",
-        options: ["PowerPoint", "PDF", "Keynote"]
-      },
-      {
-        name: "audience",
-        label: "Audiencia Objetivo",
-        options: ["Público general", "Empresas", "Startups"]
-      },
-      { name: "context", label: "Contexto adicional", type: "textarea" }
-    ],
-    action({ format, audience, context }) {
-      return {
-        hook: `Abrí la presentación de ${context} con un dato clave para ${audience}`,
-        value: `Usá el formato ${format} para resaltar los puntos principales`,
-        cta: `Cerrá motivando a actuar sobre ${context}`,
-        hashtags: `#presentaciones ${format ? "#" + format.toLowerCase() + " " : ""}#LegalHub`
-      };
-    }
-  },
-  {
-    id: "branding",
-    title: "Branding",
-    icon: "🎨",
-    description: "Define tono y estilo de tu marca.",
-    fields: [
-      {
-        name: "audience",
-        label: "Audiencia Objetivo",
-        options: ["Público general", "Empresas", "Startups"]
-      },
-      {
-        name: "platform",
-        label: "Plataforma",
-        options: ["Instagram", "LinkedIn", "Sitio Web"]
-      },
-      { name: "context", label: "Contexto adicional", type: "textarea" }
-    ],
-    action({ audience, context, platform }) {
-      return {
-        hook: `Construí una identidad que refleje ${context} ante ${audience}`,
-        value: `Definí tono y estilo coherente para ${platform}`,
-        cta: `Invitá a experimentar la esencia de ${context}`,
-        hashtags: `#branding ${platform ? "#" + platform.toLowerCase() + " " : ""}#LegalHub`
-      };
-    }
-  },
-  {
-    id: "email",
-    title: "Email Marketing & CRM",
-    icon: "📧",
-    description: "Secuencias automatizadas para convertir leads.",
-    fields: [
-      {
-        name: "type",
-        label: "Tipo de Email",
-        options: ["Boletín", "Seguimiento", "Promocional"]
-      },
-      {
-        name: "audience",
-        label: "Audiencia Objetivo",
-        options: ["Público general", "Empresas", "Startups"]
-      },
-      { name: "context", label: "Contexto adicional", type: "textarea" }
-    ],
-    action({ audience, context, type }) {
-      return {
-        hook: `Personalizá el asunto del ${type || "correo"} sobre ${context}`,
-        value: `Segmentá el mensaje para ${audience}`,
-        cta: `Incluí un llamado claro a responder`,
-        hashtags: "#emailmarketing #crm #LegalHub"
-      };
-    }
-  },
-  {
-    id: "seo",
-    title: "Optimización SEO Legal",
-    icon: "🔍",
-    description: "Palabras clave y optimización on-page.",
-    fields: [
-      {
-        name: "specialty",
-        label: "Especialidad Legal Hub",
-        options: ["Corporativo", "Laboral", "Tributario"]
-      },
-      {
-        name: "platform",
-        label: "Plataforma",
-        options: ["Sitio Web", "Blog", "Landing Page"]
-      },
-      { name: "context", label: "Contexto adicional", type: "textarea" }
-    ],
-    action({ specialty, context, platform }) {
-      return {
-        hook: `Atraé búsquedas sobre ${context} en ${platform || "tu sitio"}`,
-        value: `Incluí keywords legales de ${specialty}`,
-        cta: `Invitá a leer más sobre ${context}`,
-        hashtags: `#seo ${specialty ? "#" + specialty.toLowerCase() + " " : ""}#LegalHub`
-      };
-    }
-  },
-  {
-    id: "apolo",
-    title: "Apolo Legal",
-    icon: "🚀",
-    description: "Planifica lanzamientos con IA.",
-    fields: [
-      {
-        name: "type",
-        label: "Tipo de Lanzamiento",
-        options: ["Lanzamiento", "Relanzamiento"]
-      },
-      {
-        name: "platform",
-        label: "Plataforma",
-        options: ["Instagram", "LinkedIn", "YouTube"]
-      },
-      {
-        name: "audience",
-        label: "Audiencia Objetivo",
-        options: ["Público general", "Empresas", "Startups"]
-      },
-      { name: "context", label: "Contexto adicional", type: "textarea" }
-    ],
-    action({ type, platform, context, audience }) {
-      return {
-        hook: `Generá expectativa por el lanzamiento de ${context} para ${audience}`,
-        value: `Planificá un cronograma ${type} adaptado a ${platform}`,
-        cta: `Llamá a registrarse para ${context}`,
-        hashtags: "#apolo #lanzamiento #LegalHub"
-      };
-    }
-  },
-  {
-    id: "agenda",
-    title: "Agenda",
-    icon: "🗓️",
-    description: "Organiza contenidos y recordatorios.",
-    fields: [
-      {
-        name: "format",
-        label: "Formato",
-        options: ["Webinar", "Workshop", "Evento presencial"]
-      },
-      {
-        name: "context",
-        label: "Evento",
-        type: "textarea"
-      },
-      {
-        name: "audience",
-        label: "Audiencia Objetivo",
-        options: ["Público general", "Empresas", "Startups"]
-      }
-    ],
-    action({ format, context, audience }) {
-      return {
-        hook: `Recordá a ${audience} el evento ${context}`,
-        value: `Detallá fecha y formato ${format}`,
-        cta: `Invitá a agendar en su calendario`,
-        hashtags: "#agenda #LegalHub"
-      };
-    }
-  },
-  {
-    id: "medidor",
-    title: "Medidor de Alcance",
-    icon: "📈",
-    description: "Estimá el alcance de tus campañas.",
-    fields: [
-      {
-        name: "platform",
-        label: "Plataforma",
-        options: ["Instagram", "LinkedIn", "YouTube"]
-      },
-      {
-        name: "audience",
-        label: "Audiencia Objetivo",
-        options: ["Público general", "Empresas", "Startups"]
-      },
-      { name: "context", label: "Contexto adicional", type: "textarea" }
-    ],
-    action({ platform, audience, context }) {
-      return {
-        hook: `Estimá el alcance de ${context} en ${platform}`,
-        value: `Calculá resultados potenciales considerando a ${audience}`,
-        cta: `Motivá a lanzar la campaña`,
-        hashtags: "#medidordealcance #LegalHub"
-      };
-    }
-  },
-  {
-    id: "calendario",
-    title: "Calendario de Contenido",
-    icon: "📅",
-    description: "Generá un calendario de contenido en Excel.",
-    component: ExcelGenerator
-  }
-];
-
-function ToolModal({ tool, apiKey, onClose }) {
-  const initialConfig = {};
-  tool.fields?.forEach(f => {
-    initialConfig[f.name] = "";
-  });
-  const [config, setConfig] = useState(initialConfig);
-  const [strategy, setStrategy] = useState(null);
-
-  const handleChange = (field, value) => {
-    setConfig(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleGenerate = async () => {
-    if (apiKey) {
-      const ai = await generateAIResponse(tool, config, apiKey);
-      if (ai) {
-        setStrategy(ai);
-        return;
-      }
-    }
-    setStrategy(tool.action(config));
-  };
-
+function ModeToggle({ mode, onToggle, apiKey, onApiKey }) {
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 overflow-auto">
-        <div className="bg-white rounded-2xl p-6 w-full max-w-4xl space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold" style={{ color: BRAND.navy }}>
-              {tool.title}
-            </h3>
-            <button onClick={onClose} className="text-gray-500">
-              ✖️
-            </button>
-          </div>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-3">
-              <h4 className="font-semibold" style={{ color: BRAND.primary }}>
-                Configuración del Contenido
-              </h4>
-              {tool.fields?.map(field =>
-                field.type === "textarea" ? (
-                  <textarea
-                    key={field.name}
-                    className="w-full border rounded-xl p-2"
-                    placeholder={field.label}
-                    value={config[field.name]}
-                    onChange={e => handleChange(field.name, e.target.value)}
-                  />
-                ) : (
-                  <select
-                    key={field.name}
-                    className="w-full border rounded-xl p-2"
-                    value={config[field.name]}
-                    onChange={e => handleChange(field.name, e.target.value)}
-                  >
-                    <option value="">{field.label}</option>
-                    {field.options?.map(opt => (
-                      <option key={opt}>{opt}</option>
-                    ))}
-                  </select>
-                )
-              )}
-              <button
-                onClick={handleGenerate}
-                className="px-4 py-2 rounded-xl text-white"
-                style={{ background: BRAND.teal }}
-              >
-                Generar
-              </button>
-            </div>
-            <div className="space-y-3">
-              <h4 className="font-semibold" style={{ color: BRAND.primary }}>
-                Estrategia de Contenido
-              </h4>
-            {strategy ? (
-              <>
-                <div>
-                  <h5 className="text-sm font-semibold text-purple-600">
-                    Hook Emocional
-                  </h5>
-                  <p className="bg-gray-100 p-2 rounded-xl text-sm">{strategy.hook}</p>
-                </div>
-                <div>
-                  <h5 className="text-sm font-semibold text-teal-600">
-                    Valor Educativo
-                  </h5>
-                  <p className="bg-gray-100 p-2 rounded-xl text-sm">{strategy.value}</p>
-                </div>
-                <div>
-                  <h5 className="text-sm font-semibold text-orange-500">
-                    Call to Action
-                  </h5>
-                  <p className="bg-gray-100 p-2 rounded-xl text-sm">{strategy.cta}</p>
-                </div>
-                <div>
-                  <h5 className="text-sm font-semibold text-blue-600">
-                    Hashtags Relevantes
-                  </h5>
-                  <p className="bg-gray-100 p-2 rounded-xl text-sm">{strategy.hashtags}</p>
-                </div>
-                <div>
-                  <h5 className="text-sm font-semibold text-green-600">
-                    Imagen sugerida
-                  </h5>
-                  <img
-                    src={`https://image.pollinations.ai/prompt/${encodeURIComponent(
-                      config.context || tool.title
-                    )}`}
-                    alt="Generada por IA"
-                    className="w-full rounded-xl"
-                  />
-                </div>
-              </>
-            ) : (
-              <p className="text-sm text-gray-500">
-                Completá la configuración y generá la estrategia.
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ExcelGenerator() {
-  const [specialty, setSpecialty] = useState("");
-  const [contentType, setContentType] = useState("");
-  const [period, setPeriod] = useState("");
-  const [frequency, setFrequency] = useState("");
-  const [context, setContext] = useState("");
-
-  const handleGenerate = () => {
-    if (!specialty || !contentType || !period || !frequency) return;
-    const start = new Date();
-    const end = new Date(start);
-    if (period === "1 mes") end.setMonth(start.getMonth() + 1);
-    else if (period === "3 meses") end.setMonth(start.getMonth() + 3);
-    else if (period === "6 meses") end.setMonth(start.getMonth() + 6);
-
-    const step =
-      frequency === "Semanal" ? 7 : frequency === "Quincenal" ? 14 : 30;
-    const rows = [];
-    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + step)) {
-      rows.push({
-        Fecha: d.toISOString().split("T")[0],
-        Especialidad: specialty,
-        "Tipo de Contenido": contentType,
-        Contexto: context
-      });
-    }
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(rows);
-    XLSX.utils.book_append_sheet(wb, ws, "Calendario");
-    XLSX.writeFile(wb, "calendario_contenido.xlsx");
-  };
-
-    return (
-      <div className="space-y-4">
-        <div className="bg-white rounded-2xl shadow p-6 space-y-4">
-          <h3
-            className="text-xl font-semibold text-center"
-            style={{ color: BRAND.navy }}
-          >
-            Configuración del Excel
-          </h3>
-          <p className="text-gray-600 text-center">
-            Define los parámetros para generar tu calendario de contenido
-          </p>
-          <div className="space-y-3">
-        <select
-          className="w-full border rounded-xl p-2"
-          value={specialty}
-          onChange={e => setSpecialty(e.target.value)}
-        >
-          <option value="">Selecciona una especialidad</option>
-          <option>Corporativo</option>
-          <option>Laboral</option>
-          <option>Tributario</option>
-          <option>Tech & Startups</option>
-        </select>
-        <select
-          className="w-full border rounded-xl p-2"
-          value={contentType}
-          onChange={e => setContentType(e.target.value)}
-        >
-          <option value="">Selecciona el tipo</option>
-          <option>Artículo</option>
-          <option>Video</option>
-          <option>Post en Redes</option>
-          <option>Infografía</option>
-        </select>
-        <select
-          className="w-full border rounded-xl p-2"
-          value={period}
-          onChange={e => setPeriod(e.target.value)}
-        >
-          <option value="">Selecciona periodo</option>
-          <option>1 mes</option>
-          <option>3 meses</option>
-          <option>6 meses</option>
-        </select>
-        <select
-          className="w-full border rounded-xl p-2"
-          value={frequency}
-          onChange={e => setFrequency(e.target.value)}
-        >
-          <option value="">¿Con qué frecuencia?</option>
-          <option>Semanal</option>
-          <option>Quincenal</option>
-          <option>Mensual</option>
-        </select>
-        <textarea
-          className="w-full border rounded-xl p-2"
-          placeholder="Contexto adicional"
-          value={context}
-          onChange={e => setContext(e.target.value)}
+    <div className="flex items-center gap-3 mb-4">
+      <label className="font-medium">Modo:</label>
+      <button
+        onClick={onToggle}
+        className="px-3 py-1 rounded text-white"
+        style={{ background: "var(--lh-primary)" }}
+      >
+        {mode === "lite" ? "LITE" : "PRO"}
+      </button>
+      {mode === "pro" && (
+        <input
+          type="password"
+          placeholder="API key OpenAI"
+          value={apiKey}
+          onChange={onApiKey}
+          className="border p-2 rounded flex-1"
         />
-        <button
-          onClick={handleGenerate}
-          className="w-full px-4 py-2 rounded-xl text-white"
-          style={{ background: BRAND.primary }}
-        >
-          Generar Calendario de Contenido
-        </button>
-      </div>
-    </div>
-  </div>
-  );
-}
-
-function App() {
-  const [active, setActive] = useState(null);
-  const [apiKey, setApiKey] = useState(
-    localStorage.getItem("openai_api_key") || ""
-  );
-  const handleApiKeyChange = e => {
-    const value = e.target.value;
-    setApiKey(value);
-    localStorage.setItem("openai_api_key", value);
-  };
-  return (
-    <div className="min-h-screen" style={{ background: BRAND.bg }}>
-      <header className="text-center py-10 space-y-3">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-teal-400 bg-clip-text text-transparent">
-          Marketing Legal Hub
-        </h1>
-        <p className="text-gray-700 max-w-2xl mx-auto">
-          Potenciá tu estrategia de marketing con análisis psicográfico profundo y contenido especializado para cada área de Legal Hub
-        </p>
-        <nav className="flex justify-center gap-4 pt-4">
-          {["Analítica Predictiva", "IA Especializada", "SEO Legal"].map(item => (
-            <a
-              key={item}
-              className="px-3 py-1.5 rounded-full text-sm font-medium text-white"
-              style={{ background: BRAND.primary }}
-            >
-              {item}
-            </a>
-          ))}
-        </nav>
-        <div className="pt-4">
-          <input
-            type="password"
-            placeholder="API key OpenAI (opcional)"
-            value={apiKey}
-            onChange={handleApiKeyChange}
-            className="px-3 py-2 border rounded-xl w-full max-w-xs text-sm"
-          />
-        </div>
-      </header>
-      <section className="max-w-3xl mx-auto px-4 mb-8">
-        <ExcelGenerator />
-      </section>
-
-      <section className="max-w-5xl mx-auto px-4 space-y-6">
-        <div className="text-center">
-          <h2 className="text-2xl font-semibold mb-2" style={{ color: BRAND.navy }}>
-            Herramientas de Marketing Intelligence
-          </h2>
-          <p className="text-gray-600">
-            Cada herramienta está diseñada para crear contenido que resuene emocionalmente con los escenarios específicos de tus clientes potenciales
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-4">
-          {TOOLS.map(tool => (
-            <div
-              key={tool.id}
-              onClick={() => setActive(tool)}
-              className="bg-white rounded-2xl shadow p-5 cursor-pointer hover:shadow-lg transition space-y-2"
-            >
-              <div className="text-3xl">{tool.icon}</div>
-              <h3 className="font-semibold text-lg" style={{ color: BRAND.navy }}>
-                {tool.title}
-              </h3>
-              <p className="text-sm text-gray-600">{tool.description}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="max-w-5xl mx-auto px-4 mt-10 pb-10 text-center space-y-2">
-        <h2 className="text-2xl font-semibold" style={{ color: BRAND.navy }}>
-          Tendencias del Mercado Legal
-        </h2>
-        <p className="text-gray-600">
-          Actualizate constantemente con las últimas tendencias y oportunidades del sector legal
-        </p>
-      </section>
-
-      {active && (
-        active.component ? (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 overflow-auto">
-            <div className="bg-white rounded-2xl p-6 w-full max-w-4xl space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold" style={{ color: BRAND.navy }}>
-                  {active.title}
-                </h3>
-                <button onClick={() => setActive(null)} className="text-gray-500">
-                  ✖️
-                </button>
-              </div>
-              <active.component />
-            </div>
-          </div>
-        ) : (
-          <ToolModal
-            tool={active}
-            apiKey={apiKey}
-            onClose={() => setActive(null)}
-          />
-        )
       )}
     </div>
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+function Sidebar({ section, setSection }) {
+  const items = [
+    { id: "agent", label: "Agente" },
+    { id: "brief", label: "Brief" },
+    { id: "library", label: "Biblioteca" },
+    { id: "generators", label: "Generadores" },
+    { id: "calendar", label: "Calendario" },
+    { id: "history", label: "Historial" }
+  ];
+  return (
+    <aside className="bg-white shadow md:h-screen md:w-64">
+      <nav className="p-4 space-y-2">
+        {items.map(it => (
+          <button
+            key={it.id}
+            onClick={() => setSection(it.id)}
+            className={`block w-full text-left px-3 py-2 rounded ${
+              section === it.id ? "bg-purple-600 text-white" : "hover:bg-purple-100"
+            }`}
+          >
+            {it.label}
+          </button>
+        ))}
+      </nav>
+    </aside>
+  );
+}
 
+function AgentPanel({ agent, setAgent }) {
+  const update = e => setAgent({ ...agent, [e.target.name]: e.target.value });
+  return (
+    <div className="space-y-2">
+      <h2 className="text-xl font-semibold">Agente Especialista</h2>
+      <input
+        name="voice"
+        value={agent.voice}
+        onChange={update}
+        placeholder="Voz de marca"
+        className="w-full border p-2 rounded"
+      />
+      <select
+        name="style"
+        value={agent.style}
+        onChange={update}
+        className="w-full border p-2 rounded"
+      >
+        <option value="formal">Formal</option>
+        <option value="consultivo">Consultivo</option>
+      </select>
+      <textarea
+        name="restrictions"
+        value={agent.restrictions}
+        onChange={update}
+        placeholder="Restricciones"
+        className="w-full border p-2 rounded"
+      />
+      <textarea
+        name="compliance"
+        value={agent.compliance}
+        onChange={update}
+        placeholder="Compliance / Disclaimers por país"
+        className="w-full border p-2 rounded"
+      />
+    </div>
+  );
+}
+
+function BriefPanel({ brief, setBrief }) {
+  const update = e => setBrief({ ...brief, [e.target.name]: e.target.value });
+  const fields = [
+    { name: "brand", label: "Marca" },
+    { name: "audience", label: "Público" },
+    { name: "tone", label: "Tono" },
+    { name: "objectives", label: "Objetivos" },
+    { name: "cta", label: "CTA" },
+    { name: "channels", label: "Canales" }
+  ];
+  return (
+    <div className="space-y-2">
+      <h2 className="text-xl font-semibold">Brief</h2>
+      {fields.map(f => (
+        <input
+          key={f.name}
+          name={f.name}
+          value={brief[f.name]}
+          onChange={update}
+          placeholder={f.label}
+          className="w-full border p-2 rounded"
+        />
+      ))}
+    </div>
+  );
+}
+
+function Library() {
+  return (
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold">Biblioteca de Assets</h2>
+      <img
+        src="https://dummyimage.com/200x80/60189C/fff&text=LegalHub"
+        alt="Logo"
+        className="rounded"
+      />
+      <div>
+        <p className="font-medium">Paleta de colores:</p>
+        <div className="flex gap-2">
+          {["primary", "teal", "navy", "cyan"].map(c => (
+            <span
+              key={c}
+              className="w-8 h-8 rounded"
+              style={{ background: `var(--lh-${c})` }}
+            ></span>
+          ))}
+        </div>
+      </div>
+      <p>
+        <strong>Eslogan:</strong> Protección legal al alcance de todos.
+      </p>
+      <p className="text-xs text-gray-600">
+        <strong>Disclaimer:</strong> Este contenido es informativo y no constituye
+        asesoramiento legal.
+      </p>
+    </div>
+  );
+}
+
+function PostGenerator({ brief, apiKey, onResult }) {
+  const [platform, setPlatform] = useState("X");
+  const [topic, setTopic] = useState("");
+  const [result, setResult] = useState("");
+  const generate = async () => {
+    const prompt = `Escribe un post para ${platform} sobre ${topic}. Marca: ${brief.brand}. Público: ${brief.audience}. Tono: ${brief.tone}. Objetivos: ${brief.objectives}. CTA: ${brief.cta}.`;
+    const text = await generateText(prompt, apiKey);
+    setResult(text);
+    onResult({ platform, text });
+  };
+  return (
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <select
+          value={platform}
+          onChange={e => setPlatform(e.target.value)}
+          className="border p-2 rounded"
+        >
+          <option>X</option>
+          <option>Instagram</option>
+          <option>LinkedIn</option>
+        </select>
+        <input
+          value={topic}
+          onChange={e => setTopic(e.target.value)}
+          placeholder="Tema"
+          className="flex-1 border p-2 rounded"
+        />
+        <button
+          onClick={generate}
+          className="px-4 py-2 rounded text-white"
+          style={{ background: "var(--lh-primary)" }}
+        >
+          Generar
+        </button>
+      </div>
+      {result && (
+        <div className="bg-white p-3 rounded shadow text-sm whitespace-pre-wrap">
+          {result}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ScriptGenerator({ brief, apiKey, onResult }) {
+  const [type, setType] = useState("video");
+  const [topic, setTopic] = useState("");
+  const [result, setResult] = useState("");
+  const generate = async () => {
+    const prompt = `Crea un guión de ${
+      type === "video" ? "video corto" : "podcast"
+    } con hook, body y CTA sobre ${topic}. Marca: ${brief.brand}. Público: ${brief.audience}. Tono: ${brief.tone}.`;
+    const text = await generateText(prompt, apiKey);
+    setResult(text);
+    onResult({ subtype: type, text });
+  };
+  return (
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <select
+          value={type}
+          onChange={e => setType(e.target.value)}
+          className="border p-2 rounded"
+        >
+          <option value="video">Video corto</option>
+          <option value="podcast">Podcast</option>
+        </select>
+        <input
+          value={topic}
+          onChange={e => setTopic(e.target.value)}
+          placeholder="Tema"
+          className="flex-1 border p-2 rounded"
+        />
+        <button
+          onClick={generate}
+          className="px-4 py-2 rounded text-white"
+          style={{ background: "var(--lh-primary)" }}
+        >
+          Generar
+        </button>
+      </div>
+      {result && (
+        <div className="bg-white p-3 rounded shadow text-sm whitespace-pre-wrap">
+          {result}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ImageGenerator({ apiKey, onResult }) {
+  const [prompt, setPrompt] = useState("");
+  const [url, setUrl] = useState("");
+  const generate = async () => {
+    if (apiKey) {
+      try {
+        const res = await fetch("https://api.openai.com/v1/images/generations", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({ prompt, size: "512x512" })
+        });
+        const data = await res.json();
+        const imageUrl = data.data?.[0]?.url || "";
+        setUrl(imageUrl);
+        onResult(imageUrl);
+      } catch (e) {
+        console.error(e);
+      }
+    } else {
+      const imageUrl = `https://picsum.photos/seed/${encodeURIComponent(
+        prompt
+      )}/512/512`;
+      setUrl(imageUrl);
+      onResult(imageUrl);
+    }
+  };
+  return (
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <input
+          value={prompt}
+          onChange={e => setPrompt(e.target.value)}
+          placeholder="Prompt de imagen"
+          className="flex-1 border p-2 rounded"
+        />
+        <button
+          onClick={generate}
+          className="px-4 py-2 rounded text-white"
+          style={{ background: "var(--lh-primary)" }}
+        >
+          Generar
+        </button>
+      </div>
+      {url && <img src={url} alt="Generada" className="max-w-full rounded" />}
+    </div>
+  );
+}
+
+function Generators({ brief, apiKey, history, setHistory }) {
+  const [tab, setTab] = useState("post");
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2">
+        {[
+          { id: "post", label: "Post Redes" },
+          { id: "script", label: "Guiones" },
+          { id: "image", label: "Imágenes" }
+        ].map(t => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`px-3 py-1 rounded ${
+              tab === t.id ? "bg-purple-600 text-white" : "bg-gray-200"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+      {tab === "post" && (
+        <PostGenerator
+          brief={brief}
+          apiKey={apiKey}
+          onResult={item => setHistory([...history, { type: "post", ...item }])}
+        />
+      )}
+      {tab === "script" && (
+        <ScriptGenerator
+          brief={brief}
+          apiKey={apiKey}
+          onResult={item =>
+            setHistory([...history, { type: "script", ...item }])
+          }
+        />
+      )}
+      {tab === "image" && (
+        <ImageGenerator
+          apiKey={apiKey}
+          onResult={url => setHistory([...history, { type: "image", url }])}
+        />
+      )}
+    </div>
+  );
+}
+
+function Calendar({ calendar, setCalendar, history, setHistory }) {
+  const generate = () => {
+    const start = new Date();
+    const events = Array.from({ length: 7 }).map((_, i) => {
+      const date = new Date(start);
+      date.setDate(start.getDate() + i);
+      return { date, title: `Post ${i + 1}` };
+    });
+    setCalendar(events);
+    setHistory([...history, { type: "calendar", events }]);
+  };
+  const exportCSV = () => {
+    if (!calendar.length) return;
+    const rows = [
+      ["date", "title"],
+      ...calendar.map(e => [e.date.toISOString().split("T")[0], e.title])
+    ];
+    const csv = rows.map(r => r.join(",")).join("\n");
+    download("calendario.csv", csv, "text/csv");
+  };
+  const exportICS = () => {
+    if (!calendar.length) return;
+    const lines = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "CALSCALE:GREGORIAN"
+    ];
+    calendar.forEach((e, i) => {
+      const dt = e.date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+      lines.push("BEGIN:VEVENT");
+      lines.push(`UID:${Date.now()}-${i}@legalhub`);
+      lines.push(`DTSTAMP:${dt}`);
+      lines.push(`DTSTART:${dt}`);
+      lines.push(`SUMMARY:${e.title}`);
+      lines.push("END:VEVENT");
+    });
+    lines.push("END:VCALENDAR");
+    download("calendario.ics", lines.join("\n"), "text/calendar");
+  };
+  return (
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold">Calendario</h2>
+      <div className="flex gap-2">
+        <button
+          onClick={generate}
+          className="px-4 py-2 rounded text-white"
+          style={{ background: "var(--lh-primary)" }}
+        >
+          Generar Plan Semanal
+        </button>
+        <button
+          onClick={exportCSV}
+          className="px-4 py-2 rounded bg-gray-200"
+        >
+          Exportar CSV
+        </button>
+        <button
+          onClick={exportICS}
+          className="px-4 py-2 rounded bg-gray-200"
+        >
+          Exportar ICS
+        </button>
+      </div>
+      <ul className="list-disc pl-5">
+        {calendar.map((e, i) => (
+          <li key={i}>
+            {e.date.toDateString()} - {e.title}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function History({ history }) {
+  const exportDoc = item => {
+    const text = item.text || JSON.stringify(item, null, 2);
+    const doc = new docx.Document({
+      sections: [{ children: [new docx.Paragraph(text)] }]
+    });
+    docx.Packer.toBlob(doc).then(blob =>
+      download(
+        "pieza.docx",
+        blob,
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      )
+    );
+  };
+  const exportPitch = () => {
+    const pptx = new PptxGenJS();
+    history.slice(0, 5).forEach(h => {
+      const slide = pptx.addSlide();
+      slide.addText(h.text || h.title || "Contenido", {
+        x: 0.5,
+        y: 0.5,
+        w: 9,
+        h: 5,
+        fontSize: 18
+      });
+    });
+    pptx.writeFile("pitch.pptx");
+  };
+  return (
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold">Historial</h2>
+      <button
+        onClick={exportPitch}
+        className="px-4 py-2 rounded bg-gray-200"
+      >
+        Exportar Pitch (PPTX)
+      </button>
+      {history.length === 0 && (
+        <p className="text-gray-600">Sin contenido aún.</p>
+      )}
+      {history.map((item, i) => (
+        <div key={i} className="bg-white p-3 rounded shadow space-y-2">
+          <div className="text-sm text-gray-500">{item.type}</div>
+          {item.text && (
+            <pre className="whitespace-pre-wrap text-sm">{item.text}</pre>
+          )}
+          {item.url && <img src={item.url} className="max-w-xs" />}
+          {item.events && (
+            <div className="text-sm">{item.events.length} eventos</div>
+          )}
+          {item.text && (
+            <button
+              onClick={() => exportDoc(item)}
+              className="px-3 py-1 rounded bg-gray-200 text-sm"
+            >
+              Exportar DOCX
+            </button>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function App() {
+  const [section, setSection] = useState("generators");
+  const [mode, setMode] = useState("lite");
+  const [apiKey, setApiKey] = useState(
+    localStorage.getItem("openai_api_key") || ""
+  );
+  const [brief, setBrief] = useState({
+    brand: "",
+    audience: "",
+    tone: "",
+    objectives: "",
+    cta: "",
+    channels: ""
+  });
+  const [agent, setAgent] = useState({
+    voice: "",
+    style: "formal",
+    restrictions: "",
+    compliance: ""
+  });
+  const [history, setHistory] = useState([]);
+  const [calendar, setCalendar] = useState([]);
+  const toggleMode = () => setMode(m => (m === "lite" ? "pro" : "lite"));
+  const handleApiKey = e => {
+    setApiKey(e.target.value);
+    localStorage.setItem("openai_api_key", e.target.value);
+  };
+  return (
+    <div className="md:flex" style={{ background: "var(--lh-bg)" }}>
+      <Sidebar section={section} setSection={setSection} />
+      <main className="flex-1 p-4 space-y-6 md:ml-64">
+        <ModeToggle
+          mode={mode}
+          onToggle={toggleMode}
+          apiKey={apiKey}
+          onApiKey={handleApiKey}
+        />
+        {section === "agent" && <AgentPanel agent={agent} setAgent={setAgent} />}
+        {section === "brief" && <BriefPanel brief={brief} setBrief={setBrief} />}
+        {section === "library" && <Library />}
+        {section === "generators" && (
+          <Generators
+            brief={brief}
+            apiKey={mode === "pro" ? apiKey : ""}
+            history={history}
+            setHistory={setHistory}
+          />
+        )}
+        {section === "calendar" && (
+          <Calendar
+            calendar={calendar}
+            setCalendar={setCalendar}
+            history={history}
+            setHistory={setHistory}
+          />
+        )}
+        {section === "history" && <History history={history} />}
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
