@@ -1,5 +1,30 @@
 const { useState } = React;
 
+// Llama a OpenAI si hay una API key disponible
+async function generateAIResponse(tool, config, apiKey) {
+  const prompt = `Eres un agente de marketing de LegalHub. Usando la herramienta ${tool.title}, genera un JSON con las claves hook, value, cta y hashtags en español. Configuración: ${JSON.stringify(config)}.`;
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7
+    })
+  });
+  const data = await res.json();
+  const text = data.choices?.[0]?.message?.content || "";
+  try {
+    return JSON.parse(text);
+  } catch (err) {
+    console.error("Respuesta AI inválida", err);
+    return null;
+  }
+}
+
 // Paleta de colores de LegalHub
 const BRAND = {
   bg: "#F2F2F7",
@@ -139,7 +164,7 @@ const TOOLS = [
   }
 ];
 
-function ToolModal({ tool, onClose }) {
+function ToolModal({ tool, apiKey, onClose }) {
   const [config, setConfig] = useState({
     type: "",
     specialty: "",
@@ -154,7 +179,14 @@ function ToolModal({ tool, onClose }) {
     setConfig(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
+    if (apiKey) {
+      const ai = await generateAIResponse(tool, config, apiKey);
+      if (ai) {
+        setStrategy(ai);
+        return;
+      }
+    }
     setStrategy(tool.action(config));
   };
 
@@ -268,6 +300,18 @@ function ToolModal({ tool, onClose }) {
                   </h5>
                   <p className="bg-gray-100 p-2 rounded-xl text-sm">{strategy.hashtags}</p>
                 </div>
+                <div>
+                  <h5 className="text-sm font-semibold text-green-600">
+                    Imagen sugerida
+                  </h5>
+                  <img
+                    src={`https://image.pollinations.ai/prompt/${encodeURIComponent(
+                      config.context || tool.title
+                    )}`}
+                    alt="Generada por IA"
+                    className="w-full rounded-xl"
+                  />
+                </div>
               </>
             ) : (
               <p className="text-sm text-gray-500">
@@ -283,6 +327,14 @@ function ToolModal({ tool, onClose }) {
 
 function App() {
   const [active, setActive] = useState(null);
+  const [apiKey, setApiKey] = useState(
+    localStorage.getItem("openai_api_key") || ""
+  );
+  const handleApiKeyChange = e => {
+    const value = e.target.value;
+    setApiKey(value);
+    localStorage.setItem("openai_api_key", value);
+  };
   return (
     <div className="min-h-screen" style={{ background: BRAND.bg }}>
       <header className="text-center py-10 space-y-3">
@@ -303,6 +355,15 @@ function App() {
             </a>
           ))}
         </nav>
+        <div className="pt-4">
+          <input
+            type="password"
+            placeholder="API key OpenAI (opcional)"
+            value={apiKey}
+            onChange={handleApiKeyChange}
+            className="px-3 py-2 border rounded-xl w-full max-w-xs text-sm"
+          />
+        </div>
       </header>
 
       <section className="max-w-5xl mx-auto px-4 space-y-6">
@@ -341,7 +402,9 @@ function App() {
         </p>
       </section>
 
-      {active && <ToolModal tool={active} onClose={() => setActive(null)} />}
+      {active && (
+        <ToolModal tool={active} apiKey={apiKey} onClose={() => setActive(null)} />
+      )}
     </div>
   );
 }
