@@ -529,6 +529,7 @@ function ExcelGenerator() {
         </button>
       </div>
     </div>
+  </div>
   );
 }
 
